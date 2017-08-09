@@ -6,6 +6,7 @@
 #include <set>
 #include <map>
 #include <numeric>
+#include <string>
 
 #include "Line.h"
 
@@ -131,31 +132,34 @@ public:
 std::vector<std::set<Point2f, Comp> > generateRelative(std::vector<Point2f> points)
 {
 	std::vector<std::set<Point2f, Comp> > families;
-	auto a = std::set<Point2f, Comp>({ points.front() });
-	families.push_back(a);
-	for each (auto var in points)
+	if (points.size() > 0)
 	{
-		bool inserted = false;
-		for (auto i = families.begin(); i < families.end(); ++i)
+		auto a = std::set<Point2f, Comp>({ points.front() });
+		families.push_back(a);
+		for each (auto var in points)
 		{
-			double averageDist = std::accumulate(i->begin(), i->end(), 0.0, [&](double sum, Point2f p) { return static_cast<double>(cv::norm(var - p)) + sum; });
-			/*if (norm(*(i->begin()) - var) < distance)
+			bool inserted = false;
+			for (auto i = families.begin(); i < families.end(); ++i)
 			{
-				i->insert(var);
-				inserted = true;
-				break;
-			}*/
-			//averageDist+=
+				double averageDist = std::accumulate(i->begin(), i->end(), 0.0, [&](double sum, Point2f p) { return static_cast<double>(cv::norm(var - p)) + sum; });
+				/*if (norm(*(i->begin()) - var) < distance)
+				{
+					i->insert(var);
+					inserted = true;
+					break;
+				}*/
+				//averageDist+=
 				averageDist /= i->size();
 				if (averageDist < distance)
 				{
 					i->insert(var);
 					inserted = true;
 				}
-		}
-		if (!inserted)
-		{
-			families.push_back(std::set<Point2f, Comp>({ var }));
+			}
+			if (!inserted)
+			{
+				families.push_back(std::set<Point2f, Comp>({ var }));
+			}
 		}
 	}
 	return families;
@@ -189,9 +193,19 @@ void drawLines(Mat& img, std::vector<Line> lines)
 		}
 }
 
+void reduceSize(Mat& img)
+{
+	Mat dst;
+	while (img.cols >= 600)
+	{
+		pyrDown(img, dst);
+		img = dst;
+	}
+}
+
 VideoCapture cap;
-int bil_d = 30;
-int canny_low = 200;
+int bil_d = 3;
+int canny_low = 100;
 int canny_hight = 900;
 int hough_rho = 1500;
 int hough_theta = 12;
@@ -212,6 +226,7 @@ void on_trackbar(int, void*)
 	Mat edges;
 	std::cout << "Canny edge detection..." << std::endl;
 	Canny(imgGray, edges, canny_low, canny_low * 3, 3, true);
+	namedWindow("Edges", CV_WINDOW_NORMAL);
 	imshow("Edges", edges);
 
 	std::vector<Vec2f> Houghlines;
@@ -232,6 +247,7 @@ void on_trackbar(int, void*)
 		{
 			drawPoint(families[i], result);
 		}
+		namedWindow("Lines", CV_WINDOW_NORMAL);
 	imshow("Lines", result);
 	std::cout << "\t***\tIteration ended\t***" << std::endl;
 }
@@ -251,9 +267,16 @@ int main()
 	cap.open(1);
 	Mat temp;
 	cap >> temp;
-	while (waitKey(1) != 27)
+	do
 	{
-		cap >> input;
+		char ch;
+		std::string a4 = "../A4/";
+		std::string ext = ".jpg";
+		std::cin >> ch;
+		std::string path = a4 + ch + ext;
+		input = imread("../A4/1.jpg"/*a4 + ch + ext*/);
+
+		reduceSize(input);
 
 		Mat bilateral;
 
@@ -265,6 +288,7 @@ int main()
 
 		on_trackbar(0, 0);
 	}
+	while (waitKey() != 27);
 	//while (waitKey(1) != 27)
 	//{
 
