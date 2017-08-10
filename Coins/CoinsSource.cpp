@@ -24,9 +24,7 @@ int canny_low = 80;
 int hough_rho = 0;
 int hough_thresh = 35;
 int minGrad = 0;
-int imgIndex = 9;
-
-Mat input;
+int imgIndex = 7; // 8 crashes
 
 std::vector<Line> getLines(std::vector<Vec2f> lines)
 {
@@ -146,6 +144,7 @@ void drawPoint(std::set<Point2f, Comp> points, Mat& img, Scalar color, bool mult
 		sum = sum / (double)points.size();
 		circle(img, sum, 5, color, 1);
 	}
+	imshow("Points", img);
 }
 
 void drawLines(Mat& img, std::vector<Line> lines)
@@ -157,6 +156,7 @@ void drawLines(Mat& img, std::vector<Line> lines)
 		Point pt2 = lines[i].pt1;
 		line(img, pt1, pt2, Scalar(0, 0, 255), 1, LINE_AA);
 	}
+	imshow("Lines", img);
 }
 
 void reduceSize(Mat& img)
@@ -169,60 +169,15 @@ void reduceSize(Mat& img)
 	}
 }
 
-void on_trackbar(int, void*)
-{
-	Mat img = input;
-	Mat imgGray;
-	cvtColor(img, imgGray, COLOR_BGR2GRAY);
-
-	Mat edges;
-	std::cout << "Canny edge detection..." << std::endl;
-	Canny(imgGray, edges, canny_low, canny_low * 3, 3, true);
-	namedWindow("Edges", CV_WINDOW_NORMAL);
-	imshow("Edges", edges);
-	//auto kern = getStructuringElement(MORPH_RECT, Size())
-
-	std::vector<Vec2f> Houghlines;
-	std::cout << "Hough transfroming..." << std::endl;
-	HoughLines(edges, Houghlines, hough_rho + 1, CV_PI / 180.0, hough_thresh, 0, 0, minGrad*(CV_PI / 180));
-	auto customLines = getLines(Houghlines);
-
-	//comparePoints(customLines);
-
-	Mat result = input.clone();
-	drawLines(result, customLines);
-
-	auto points = findRectangleCorners(customLines, result);
-
-		//std::set<Point2f, Comp> pointsSet(points.begin(), points.end());
-	auto families = partitionPoints2Families(points);
-
-	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
-
-	for (size_t i = 0; i < 4 && i < families.size(); i++)
-	{
-		drawPoint(families[i], result, Scalar(0, 255, 0));
-	}
-	for (size_t i = 4; i < families.size(); i++)
-	{
-		drawPoint(families[i], result, Scalar(255, 255, 255));
-	}
-	namedWindow("Lines", CV_WINDOW_NORMAL);
-	imshow("Lines", result);
-	std::cout << "\t***\tIteration ended\t***" << std::endl;
-	std::cout << "\t***\tPress any key\t***" << std::endl;
-	paperToRectangle(result, accumulatePointFamilies(result, std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + 4)));
-}
-
 std::vector<Point2f> getA4Corners(Mat& input)
 {
 	reduceSize(input);
 	Mat bilateral;
 	bilateralFilter(input, bilateral, bil_d, bil_d * 2, bil_d / 2);
+	input = bilateral;
 
-	Mat img = input;
 	Mat imgGray;
-	cvtColor(img, imgGray, COLOR_BGR2GRAY);
+	cvtColor(input, imgGray, COLOR_BGR2GRAY);
 
 	Mat edges;
 	std::cout << "Canny edge detection..." << std::endl;
@@ -237,12 +192,14 @@ std::vector<Point2f> getA4Corners(Mat& input)
 
 	Mat result = input.clone();
 	drawLines(result, lines);
-
 	auto points = findRectangleCorners(lines, result);
 
-	//std::set<Point2f, Comp> pointsSet(points.begin(), points.end());
 	auto families = partitionPoints2Families(points);
+	for each (auto var in families)
+	{
+	drawPoint(var, result, Scalar::all(255));
 
+	}
 	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
 
 	return accumulatePointFamilies(result, std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + PointsQuantity));
@@ -261,13 +218,6 @@ void changeInput(int, void* img)
 	*imgMat = imread(path);
 	reduceSize(*imgMat);
 
-	Mat bilateral;
-	std::cout << "BilaterialFiltering..." << std::endl;
-	bilateralFilter(*imgMat, bilateral, bil_d, bil_d * 2, bil_d / 2);
-	imshow("bilaterial", bilateral);
-	*imgMat = bilateral;
-
-	input = *imgMat;
 	paperToRectangle(*imgMat, getA4Corners(*imgMat));
 }
 
@@ -278,14 +228,14 @@ int main()
 	const char* panel = "Preprocessing";
 	namedWindow(panel, CV_WINDOW_NORMAL);
 	createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
-	createTrackbar("B diameter", panel, &bil_d, 50, on_trackbar);
-	createTrackbar("C low", panel, &canny_low, 900, on_trackbar);
-	createTrackbar("H rho", panel, &hough_rho, 300, on_trackbar);
-	createTrackbar("H thresh", panel, &hough_thresh, 900, on_trackbar);
-	createTrackbar("H min grad", panel, &minGrad, 90, on_trackbar);
-	createTrackbar("P dist", panel, &distance, 900, on_trackbar);
-	createTrackbar("L minGradCust", panel, &minGradCustom, 90, on_trackbar);
-	createTrackbar("L marginK", panel, &marginK, 2300, on_trackbar);
+	createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
+	createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
+	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
+	createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
+	createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
+	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
+	createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
+	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
 
 	changeInput(0, &source);
 
