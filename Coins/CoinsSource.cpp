@@ -265,6 +265,7 @@ void changeInput(int, void* img)
 	std::cout << "BilaterialFiltering..." << std::endl;
 	bilateralFilter(*imgMat, bilateral, bil_d, bil_d * 2, bil_d / 2);
 	imshow("bilaterial", bilateral);
+	*imgMat = bilateral;
 
 	input = *imgMat;
 	paperToRectangle(*imgMat, getA4Corners(*imgMat));
