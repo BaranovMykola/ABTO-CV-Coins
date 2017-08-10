@@ -24,7 +24,7 @@ int canny_low = 80;
 int hough_rho = 0;
 int hough_thresh = 35;
 int minGrad = 0;
-int imgIndex = 7; // 8 crashes
+int imgIndex = 6; // 8 crashes
 
 std::vector<Line> getLines(std::vector<Vec2f> lines)
 {
@@ -197,11 +197,10 @@ std::vector<Point2f> getA4Corners(Mat& input)
 	auto families = partitionPoints2Families(points);
 	for each (auto var in families)
 	{
-	drawPoint(var, result, Scalar::all(255));
-
+		drawPoint(var, result, Scalar::all(255));
 	}
-	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
 
+	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
 	return accumulatePointFamilies(result, std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + PointsQuantity));
 }
 
