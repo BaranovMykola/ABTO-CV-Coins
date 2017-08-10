@@ -28,41 +28,6 @@ int minLineDist = 30;
 int minGradCustom = 10;
 int marginK = 10;
 
-Mat foto()
-{
-	VideoCapture cap;
-	cap.open(1);
-	Mat frame;
-	cap >> frame;
-	cap >> frame;
-	return frame;
-}
-
-void showVideo(String name = "VideoStream")
-{
-	VideoCapture cap;
-	cap.open(1);
-	Mat frame;
-	cap >> frame;
-	while (waitKey(1) != 27)
-	{
-		cap >> frame;
-		imshow(name, frame);
-	}
-}
-
-Mat customCanny(Mat& img)
-{
-	Mat canny;
-	Canny(img, canny, cannyLow, cannyUp);
-	return canny;
-}
-
-Scalar rndScalar(RNG rnd)
-{
-	return Scalar(rnd.uniform(0, 255), rnd.uniform(0, 255), rnd.uniform(0, 255));
-}
-
 std::vector<Line> getLines(std::vector<Vec2f> lines)
 {
 	std::vector<Line> points;
