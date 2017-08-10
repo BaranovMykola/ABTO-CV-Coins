@@ -10,6 +10,7 @@
 #include <future>
 
 #include "Line.h"
+#include "CoinsDetection.h"
 
 using namespace cv;
 
@@ -143,11 +144,6 @@ std::vector<Point2f> findRectangle(std::vector<Line> lines, Mat& img)
 	return points;
 }
 
-class Comp
-{
-public:
-	bool operator()(const Point2f& l, const  Point2f& r) { return l.x < r.x; };
-};
 
 std::vector<std::set<Point2f, Comp> > generateRelative(std::vector<Point2f> points)
 {
@@ -282,7 +278,9 @@ void on_trackbar(int, void*)
 	imshow("Lines", result);
 	std::cout << "\t***\tIteration ended\t***" << std::endl;
 	//std::cout << "\t***\tPress any key\t***" << std::endl;
+	paperToRectangle(result,getPoints(result, std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + 4)));
 }
+
 
 void changeInput(int, void*)
 {
@@ -291,6 +289,7 @@ void changeInput(int, void*)
 }
 int main()
 {
+	print();
 	const char* panel = "Preprocessing";
 	namedWindow(panel, CV_WINDOW_NORMAL);
 	createTrackbar("Img", panel, &imgIndex, 13, changeInput);
@@ -302,14 +301,15 @@ int main()
 	createTrackbar("P dist", panel, &distance, 900, on_trackbar);
 
 		
-
+	input = imread("../A4/3.jpg");
 		reduceSize(input);
+
 
 		Mat bilateral;
 
 		std::cout << "BilaterialFiltering..." << std::endl;
 		bilateralFilter(input, bilateral, bil_d, bil_d * 2, bil_d / 2);
-		imshow("bilaterial", bilateral);
+	//	imshow("bilaterial", bilateral);
 		input = bilateral;
 
 
