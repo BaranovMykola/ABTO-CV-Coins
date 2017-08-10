@@ -3,7 +3,7 @@
 
 struct Line
 {
-	Line(double _a = 0, double _b = 0);
+	Line(double _a = 0, double _b = 0, bool _vertival = false);
 	Line(cv::Point2f pt0, cv::Point2f pt1);
 	~Line();
 
@@ -14,5 +14,6 @@ struct Line
 	double b;
 	cv::Point2f pt0;
 	cv::Point2f pt1;
+	bool vertical;
 };
 

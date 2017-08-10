@@ -2,9 +2,10 @@
 
 #include <cmath>
 
-Line::Line(double _a, double _b):
+Line::Line(double _a, double _b, bool _vertical):
 	a(_a),
-	b(_b)
+	b(_b),
+	vertical(_vertical)
 {
 	pt0.x = 0;
 	pt0.y = b;
@@ -19,12 +20,15 @@ Line::Line(cv::Point2f pt0, cv::Point2f pt1):
 	if (pt0.x != pt1.x)
 	{
 		a = (pt0.y - pt1.y) / (pt0.x - pt1.x);
+		b = pt0.y - a*pt0.x;
+		vertical = false;
 	}
 	else
 	{
-		a = 0;
+		a = pt1.x;
+		b = pt1.x;
+		vertical = true;
 	}
-	b = pt0.y - a*pt0.x;
 }
 
 Line::~Line()

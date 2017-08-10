@@ -7,6 +7,7 @@
 #include <map>
 #include <numeric>
 #include <string>
+#include <future>
 
 #include "Line.h"
 
@@ -109,15 +110,34 @@ std::vector<Point2f> findRectangle(std::vector<Line> lines, Mat& img)
 	{
 		for each (auto j in lines)
 		{
-			if (i.a != j.a)
+			double x;
+			double y;
+			if(i.vertical != j.vertical)
 			{
-				double x = -(i.b - j.b) / (i.a - j.a);
-				double y = i.a*x + i.b;
-				if (x > 0 && y > 0 && x < img.cols && y < img.rows)
+				if (i.vertical)
+				{
+					x = i.a;
+					y = j.a*x + j.b;
+				}
+				else if (j.vertical)
+				{
+					x = j.a;
+					y = i.a*x + i.b;
+				}
+			}
+			else if (i.a != j.a && !i.vertical)
+			{
+				x = -(i.b - j.b) / (i.a - j.a);
+				y = i.a*x + i.b;
+			}
+			else
+			{
+				continue;
+			}
+			if (x > 0 && y > 0 && x < img.cols && y < img.rows)
 				{
 					points.push_back(Point2f(x, y));
 				}
-			}
 		}
 	}
 	return points;
@@ -132,12 +152,19 @@ public:
 std::vector<std::set<Point2f, Comp> > generateRelative(std::vector<Point2f> points)
 {
 	std::vector<std::set<Point2f, Comp> > families;
+	if (points.size() > 3500) { std::cout << "Point threshold reached" << std::endl;return families; }
 	if (points.size() > 0)
 	{
+		int count = 0;
 		auto a = std::set<Point2f, Comp>({ points.front() });
 		families.push_back(a);
 		for each (auto var in points)
 		{
+			++count;
+			if (count % 100 == 0)
+			{
+				std::cout << "Processing points..." << count << " \ " << points.size() << std::endl;
+			}
 			bool inserted = false;
 			for (auto i = families.begin(); i < families.end(); ++i)
 			{
@@ -196,7 +223,7 @@ void drawLines(Mat& img, std::vector<Line> lines)
 void reduceSize(Mat& img)
 {
 	Mat dst;
-	while (img.cols >= 600)
+	while (img.cols >= 1200 || img.rows >= 1200)
 	{
 		pyrDown(img, dst);
 		img = dst;
@@ -205,16 +232,19 @@ void reduceSize(Mat& img)
 
 VideoCapture cap;
 int bil_d = 3;
-int canny_low = 100;
+int canny_low = 80;
 int canny_hight = 900;
 int hough_rho = 1500;
 int hough_theta = 12;
-int hough_thresh = 58;
+int hough_thresh = 35;
+int imgIndex = 0;
 
 Mat input;
 
 void on_trackbar(int, void*)
 {
+
+	
 	Mat img = input;
 	//cap >> img;
 
@@ -231,7 +261,7 @@ void on_trackbar(int, void*)
 
 	std::vector<Vec2f> Houghlines;
 	std::cout << "Hough transfroming..." << std::endl;
-	HoughLines(edges, Houghlines, hough_rho / 1000.0, (hough_theta/3.0)*(CV_PI/180)+0.000001, hough_thresh);
+	HoughLines(edges, Houghlines, hough_rho / 1000.0, (hough_theta/3.0)*(CV_PI/180), hough_thresh, 0, 0, 0.23);
 	auto customLines = getLines(Houghlines);
 
 	Mat result = input.clone();
@@ -241,6 +271,7 @@ void on_trackbar(int, void*)
 
 		//std::set<Point2f, Comp> pointsSet(points.begin(), points.end());
 		auto families = generateRelative(points);
+
 		std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
 
 		for (size_t i = 0; i < 4 && i < families.size(); i++)
@@ -250,31 +281,27 @@ void on_trackbar(int, void*)
 		namedWindow("Lines", CV_WINDOW_NORMAL);
 	imshow("Lines", result);
 	std::cout << "\t***\tIteration ended\t***" << std::endl;
+	//std::cout << "\t***\tPress any key\t***" << std::endl;
 }
 
+void changeInput(int, void*)
+{
+	std::string a4 = "../A4/";
+	std::string ext = ".jpg";
+}
 int main()
 {
-
 	const char* panel = "Preprocessing";
 	namedWindow(panel, CV_WINDOW_NORMAL);
+	createTrackbar("Img", panel, &imgIndex, 13, changeInput);
 	createTrackbar("B diameter", panel, &bil_d, 50, on_trackbar);
 	createTrackbar("C low", panel, &canny_low, 900, on_trackbar);
 	createTrackbar("H rho/1000", panel, &hough_rho, 2000, on_trackbar);
-	createTrackbar("H theta/3", panel, &hough_theta, 90, on_trackbar);
+	createTrackbar("H theta", panel, &hough_theta, 90, on_trackbar);
 	createTrackbar("H thresh", panel, &hough_thresh, 900, on_trackbar);
 	createTrackbar("P dist", panel, &distance, 900, on_trackbar);
 
-	cap.open(1);
-	Mat temp;
-	cap >> temp;
-	do
-	{
-		char ch;
-		std::string a4 = "../A4/";
-		std::string ext = ".jpg";
-		std::cin >> ch;
-		std::string path = a4 + ch + ext;
-		input = imread("../A4/1.jpg"/*a4 + ch + ext*/);
+		
 
 		reduceSize(input);
 
@@ -287,8 +314,9 @@ int main()
 
 
 		on_trackbar(0, 0);
-	}
-	while (waitKey() != 27);
+		//waitKey(1);
+	/*}
+	while (waitKey() != 27);*/
 	//while (waitKey(1) != 27)
 	//{
 
