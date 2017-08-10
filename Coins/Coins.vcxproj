@@ -154,10 +154,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CoinsDetection.cpp" />
     <ClCompile Include="CoinsSource.cpp" />
     <ClCompile Include="Line.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CoinsDetection.h" />
     <ClInclude Include="Line.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
