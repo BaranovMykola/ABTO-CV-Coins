@@ -112,7 +112,7 @@ void print()
 	std::cout << "!!!!!!!!!!!!!!!!!!!!!!!";
 }
 
-std::vector<cv::Point2f> getPoints( Mat& pict, std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
+std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict, std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
 {
 	std::vector<cv::Point2f> res;
 	for (size_t i = 0; i < PointsQuantity; i++)
