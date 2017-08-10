@@ -25,6 +25,7 @@ int distance = 29;
 int morph_size = 7;
 int minLineDist = 30;
 int minGradCustom = 10;
+int marginK = 10;
 
 Mat foto()
 {
@@ -93,17 +94,49 @@ void comparePoints(std::vector<Line>& points)
 				line(clon, i->pt0, i->pt1, Scalar(255, 0, 0));
 				line(clon, j->pt0, j->pt1, Scalar(255, 0, 0));
 			double diffAngle = l0.angle() - l1.angle();
-			if (abs(diffAngle) < minGradCustom && abs(l0.b - l1.b) < minLineDist && 
-				l0.a != l1.a && l0.b != l1.b)
+
+			double x;
+			double y;
+			if (l0.vertical != l1.vertical)
+			{
+				if (l0.vertical)
+				{
+					x = l0.a;
+					y = l0.a*x + l0.b;
+				}
+				else if (l1.vertical)
+				{
+					x = l1.a;
+					y = l1.a*x + l1.b;
+				}
+			}
+			else if (l0.a != l1.a && !l0.vertical)
+			{
+				x = -(l0.b - l1.b) / (l0.a - l1.a);
+				y = l0.a*x + l0.b;
+			}
+			else
+			{
+				x = y = 1;
+			}
+
+			int distX = std::min(abs(x), x - input.cols);
+			int distY = std::min(abs(y), y - input.rows);
+			//std::cout << "cond = " << std::boolalpha << (std::min(distX, distY) / (diffAngle / marginK) < 100) << std::endl;
+			if (abs(diffAngle) < minGradCustom &&
+				l0.a != l1.a && l0.b != l1.b &&
+				(x > -marginK && x < input.cols+ marginK && y > -marginK && y < input.rows+ marginK)
+				
+				)
 			{
 				Line diff((l0.a + l1.a) / 2, (l0.b + l1.b) / 2);
 				line(clon, diff.pt0, diff.pt1, Scalar(0, 255, 0), 1);
-				putText(clon, "Deleting...", diff.pt0, cv::HersheyFonts::FONT_HERSHEY_PLAIN, 6, Scalar::all(255));
+				putText(clon, "Deleting...", Point(0,0), cv::HersheyFonts::FONT_HERSHEY_PLAIN, 6, Scalar::all(255));
 				imshow("delete", clon);
-				waitKey();
+				//waitKey();
 				points.erase(j);
-				points.erase(i);
-				points.push_back(diff);
+			//	points.erase(i);
+			//	points.push_back(diff);
 				i = points.begin();
 				//if (points.size() == 4)
 				//{
@@ -112,7 +145,7 @@ void comparePoints(std::vector<Line>& points)
 				break;
 			}
 			imshow("delete", clon);
-			waitKey();
+			//waitKey();
 		}
 	}
 }
@@ -149,9 +182,16 @@ std::vector<Point2f> findRectangle(std::vector<Line> lines, Mat& img)
 			{
 				continue;
 			}
-			if (x > 0 && y > 0 && x < img.cols && y < img.rows)
+			if (x > 0 && y > 0 && x < img.cols && y < img.rows &&
+				((int)abs(i.angle() - j.angle()))%180 > minGradCustom && ((int)abs(i.angle() - j.angle())) % 180 < 180-minGradCustom)
 				{
 					points.push_back(Point2f(x, y));
+				//std::cout << ((int)abs(i.angle() - j.angle())%180) << std::endl;
+					circle(input, Point2f(x, y), 3, Scalar(0, 0, 255), -1);
+					line(input, i.pt0, i.pt1, Scalar::all(255), 1);
+					line(input, j.pt0, j.pt1, Scalar::all(255), 1);
+					imshow("eq", input);
+					//waitKey();
 				}
 		}
 	}
@@ -207,7 +247,7 @@ std::vector<std::set<Point2f, Comp> > generateRelative(std::vector<Point2f> poin
 	return families;
 }
 
-void drawPoint(std::set<Point2f, Comp> points, Mat& img, bool mult = false)
+void drawPoint(std::set<Point2f, Comp> points, Mat& img, Scalar color, bool mult = false)
 {
 	if (mult)
 	{
@@ -220,7 +260,7 @@ void drawPoint(std::set<Point2f, Comp> points, Mat& img, bool mult = false)
 	{
 		Point2f sum = std::accumulate(points.begin(), points.end(), Point2f(0, 0));
 		sum = sum / (double)points.size();
-		circle(img, sum, 5, Scalar(0, 255, 0), -1);
+		circle(img, sum, 5, color, 1);
 	}
 }
 
@@ -254,7 +294,7 @@ int hough_rho = 0;
 int hough_theta = 12;
 int hough_thresh = 35;
 int minGrad = 0;
-int imgIndex = 0;
+int imgIndex = 9;
 
 
 void on_trackbar(int, void*)
@@ -274,13 +314,14 @@ void on_trackbar(int, void*)
 	Canny(imgGray, edges, canny_low, canny_low * 3, 3, true);
 	namedWindow("Edges", CV_WINDOW_NORMAL);
 	imshow("Edges", edges);
+	//auto kern = getStructuringElement(MORPH_RECT, Size())
 
 	std::vector<Vec2f> Houghlines;
 	std::cout << "Hough transfroming..." << std::endl;
 	HoughLines(edges, Houghlines, hough_rho+1, CV_PI/180.0, hough_thresh, 0, 0, minGrad*(CV_PI/180));
 	auto customLines = getLines(Houghlines);
 
-	comparePoints(customLines);
+	//comparePoints(customLines);
 
 	Mat result = input.clone();
 	drawLines(result, customLines);
@@ -294,7 +335,11 @@ void on_trackbar(int, void*)
 
 		for (size_t i = 0; i < 4 && i < families.size(); i++)
 		{
-			drawPoint(families[i], result);
+			drawPoint(families[i], result, Scalar(0,255,0));
+		}
+		for (size_t i = 4; i < families.size(); i++)
+		{
+			drawPoint(families[i], result, Scalar(255, 255, 255));
 		}
 		namedWindow("Lines", CV_WINDOW_NORMAL);
 	imshow("Lines", result);
@@ -335,8 +380,8 @@ int main()
 	createTrackbar("H thresh", panel, &hough_thresh, 900, on_trackbar);
 	createTrackbar("H min grad", panel, &minGrad, 90, on_trackbar);
 	createTrackbar("P dist", panel, &distance, 900, on_trackbar);
-	createTrackbar("L minGradCust", panel, &minGradCustom, 30, on_trackbar);
-	createTrackbar("L minDistCust", panel, &minLineDist, 300, on_trackbar);
+	createTrackbar("L minGradCust", panel, &minGradCustom, 90, on_trackbar);
+	createTrackbar("L marginK", panel, &marginK, 2300, on_trackbar);
 
 	changeInput(0, 0);
 
