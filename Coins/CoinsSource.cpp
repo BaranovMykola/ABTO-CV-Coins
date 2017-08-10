@@ -8,6 +8,7 @@
 #include <numeric>
 #include <string>
 #include <future>
+#include <sstream>
 
 #include "Line.h"
 
@@ -22,6 +23,8 @@ int minTreshold = 150;
 int maxTreshold = 255;
 int distance = 29;
 int morph_size = 7;
+int minLineDist = 30;
+int minGradCustom = 10;
 
 Mat foto()
 {
@@ -76,6 +79,8 @@ std::vector<Line> getLines(std::vector<Vec2f> lines)
 	return points;
 }
 
+Mat input;
+
 void comparePoints(std::vector<Line>& points)
 {
 	for (auto i = points.begin(); i < points.end(); ++i)
@@ -84,13 +89,21 @@ void comparePoints(std::vector<Line>& points)
 		for (auto j = i + 1; j < points.end(); ++j)
 		{
 			Line l1 = *j;
+			Mat clon = input.clone();
+				line(clon, i->pt0, i->pt1, Scalar(255, 0, 0));
+				line(clon, j->pt0, j->pt1, Scalar(255, 0, 0));
 			double diffAngle = l0.angle() - l1.angle();
-			if (abs(diffAngle) < eps / 9.0)
+			if (abs(diffAngle) < minGradCustom && abs(l0.b - l1.b) < minLineDist && 
+				l0.a != l1.a && l0.b != l1.b)
 			{
 				Line diff((l0.a + l1.a) / 2, (l0.b + l1.b) / 2);
-				//points.erase(j);
+				line(clon, diff.pt0, diff.pt1, Scalar(0, 255, 0), 1);
+				putText(clon, "Deleting...", diff.pt0, cv::HersheyFonts::FONT_HERSHEY_PLAIN, 6, Scalar::all(255));
+				imshow("delete", clon);
+				waitKey();
+				points.erase(j);
 				points.erase(i);
-				//points.push_back(diff);
+				points.push_back(diff);
 				i = points.begin();
 				//if (points.size() == 4)
 				//{
@@ -98,6 +111,8 @@ void comparePoints(std::vector<Line>& points)
 				//}
 				break;
 			}
+			imshow("delete", clon);
+			waitKey();
 		}
 	}
 }
@@ -230,16 +245,17 @@ void reduceSize(Mat& img)
 	}
 }
 
+
 VideoCapture cap;
-int bil_d = 3;
+int bil_d = 30;
 int canny_low = 80;
 int canny_hight = 900;
-int hough_rho = 1500;
+int hough_rho = 0;
 int hough_theta = 12;
 int hough_thresh = 35;
+int minGrad = 0;
 int imgIndex = 0;
 
-Mat input;
 
 void on_trackbar(int, void*)
 {
@@ -261,8 +277,10 @@ void on_trackbar(int, void*)
 
 	std::vector<Vec2f> Houghlines;
 	std::cout << "Hough transfroming..." << std::endl;
-	HoughLines(edges, Houghlines, hough_rho / 1000.0, (hough_theta/3.0)*(CV_PI/180), hough_thresh, 0, 0, 0.23);
+	HoughLines(edges, Houghlines, hough_rho+1, CV_PI/180.0, hough_thresh, 0, 0, minGrad*(CV_PI/180));
 	auto customLines = getLines(Houghlines);
+
+	comparePoints(customLines);
 
 	Mat result = input.clone();
 	drawLines(result, customLines);
@@ -288,6 +306,23 @@ void changeInput(int, void*)
 {
 	std::string a4 = "../A4/";
 	std::string ext = ".jpg";
+	std::stringstream str;
+	std::string name;
+	str << imgIndex;
+	str >> name;
+	std::string path = a4 + name + ext;
+	input = imread(path);
+	reduceSize(input);
+
+	Mat bilateral;
+
+	std::cout << "BilaterialFiltering..." << std::endl;
+	bilateralFilter(input, bilateral, bil_d, bil_d * 2, bil_d / 2);
+	imshow("bilaterial", bilateral);
+	input = bilateral;
+
+
+	on_trackbar(0, 0);
 }
 int main()
 {
@@ -296,24 +331,15 @@ int main()
 	createTrackbar("Img", panel, &imgIndex, 13, changeInput);
 	createTrackbar("B diameter", panel, &bil_d, 50, on_trackbar);
 	createTrackbar("C low", panel, &canny_low, 900, on_trackbar);
-	createTrackbar("H rho/1000", panel, &hough_rho, 2000, on_trackbar);
-	createTrackbar("H theta", panel, &hough_theta, 90, on_trackbar);
+	createTrackbar("H rho", panel, &hough_rho, 300, on_trackbar);
 	createTrackbar("H thresh", panel, &hough_thresh, 900, on_trackbar);
+	createTrackbar("H min grad", panel, &minGrad, 90, on_trackbar);
 	createTrackbar("P dist", panel, &distance, 900, on_trackbar);
+	createTrackbar("L minGradCust", panel, &minGradCustom, 30, on_trackbar);
+	createTrackbar("L minDistCust", panel, &minLineDist, 300, on_trackbar);
 
-		
+	changeInput(0, 0);
 
-		reduceSize(input);
-
-		Mat bilateral;
-
-		std::cout << "BilaterialFiltering..." << std::endl;
-		bilateralFilter(input, bilateral, bil_d, bil_d * 2, bil_d / 2);
-		imshow("bilaterial", bilateral);
-		input = bilateral;
-
-
-		on_trackbar(0, 0);
 		//waitKey(1);
 	/*}
 	while (waitKey() != 27);*/

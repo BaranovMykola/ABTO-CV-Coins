@@ -9,8 +9,8 @@ Line::Line(double _a, double _b, bool _vertical):
 {
 	pt0.x = 0;
 	pt0.y = b;
-	pt1.x = 1;
-	pt1.y = a + b;
+	pt1.x = 2000;
+	pt1.y = a*pt1.x + b;
 }
 
 Line::Line(cv::Point2f pt0, cv::Point2f pt1):
@@ -37,7 +37,7 @@ Line::~Line()
 
 double Line::angle() const
 {
-	return atan(a) * 180 / 3.14;
+	return vertical ? 90 : atan(a) * 180 / CV_PI;
 }
 
 double Line::dist(const Line & other) const
