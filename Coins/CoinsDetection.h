@@ -10,13 +10,16 @@
 
 using namespace cv;
 
-const Size A4(210, 297);
+const Size A4(297, 210);//297 - width, 210 - height
+
 
 class Comp
 {
 public:
 	bool operator()(const Point2f& l, const  Point2f& r) { return l.x < r.x; };
 };
+
+bool isQuadHor(Point2f arr[]);
 
 const int PointsQuantity = 4;
 
@@ -27,3 +30,5 @@ void paperToRectangle(Mat& pict, std::vector<cv::Point2f> points);
 bool isMatSorted(Mat& arr);
 
 bool isHorizontal(Mat& points, Mat& pict, Mat& transMat);
+
+Mat cutPaper(Mat& data, std::vector<Point2f> points);

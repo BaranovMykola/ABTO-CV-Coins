@@ -219,46 +219,60 @@ void changeInput(int, void* img)
 	reduceSize(*imgMat);
 
 	paperToRectangle(*imgMat, getA4Corners(*imgMat));
-}
 
+
+}
 
 int main()
 {
-	std::string action;
-	std::cin >> action;
-	Mat source;
-	const char* panel = "Preprocessing";
-	namedWindow(panel, CV_WINDOW_NORMAL);
-	createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
-	createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
-	createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
-	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
-	createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
-	createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
-	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
-	createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
-	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
-
-	if (action == "all")
+	try
 	{
-		for (size_t i = 0; i < 13; i++)
+		std::string action;
+		std::cin >> action;
+		Mat source;
+		const char* panel = "Preprocessing";
+		namedWindow(panel, CV_WINDOW_NORMAL);
+		createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
+		createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
+		createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
+		createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
+		createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
+		createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
+		createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
+		createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
+		createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
+
+		if (action == "all")
 		{
-			imgIndex = i;
-			changeInput(0, &source);
-			if (waitKey() == 27)
+			for (size_t i = 0; i < 13; i++)
 			{
-				break;
+				imgIndex = i;
+				changeInput(0, &source);
+				if (waitKey() == 27)
+				{
+					break;
+				}
+			}
+		}
+		else
+		{
+			while (action != "-1")
+			{
+				std::stringstream str;
+				str << action;
+				str >> imgIndex;
+				changeInput(0, &source);
+
+				std::cout << "enter action: \t";
+				std::cin >> action;
+
+				waitKey();
 			}
 		}
 	}
-	else
+	catch (std::exception exc)
 	{
-		std::stringstream str;
-		str << action;
-		str >> imgIndex;
-		changeInput(0, &source);
+		std::cout << exc.what() << std::endl;
 	}
-
-	waitKey();
 	return 0;
 }
