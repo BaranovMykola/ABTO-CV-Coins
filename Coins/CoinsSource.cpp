@@ -262,11 +262,12 @@ int main()
 				str << action;
 				str >> imgIndex;
 				changeInput(0, &source);
+				
+				waitKey();
 
 				std::cout << "enter action: \t";
 				std::cin >> action;
 
-				waitKey();
 			}
 		}
 	}
