@@ -144,7 +144,7 @@ void drawPoint(std::set<Point2f, Comp> points, Mat& img, Scalar color, bool mult
 		sum = sum / (double)points.size();
 		circle(img, sum, 5, color, 1);
 	}
-	imshow("Points", img);
+	//imshow("Points", img);
 }
 
 void drawLines(Mat& img, std::vector<Line> lines)
@@ -156,7 +156,7 @@ void drawLines(Mat& img, std::vector<Line> lines)
 		Point pt2 = lines[i].pt1;
 		line(img, pt1, pt2, Scalar(0, 0, 255), 1, LINE_AA);
 	}
-	imshow("Lines", img);
+	//imshow("Lines", img);
 }
 
 void reduceSize(Mat& img)
@@ -183,7 +183,7 @@ std::vector<Point2f> getA4Corners(Mat& input)
 	std::cout << "Canny edge detection..." << std::endl;
 	Canny(imgGray, edges, canny_low, canny_low * 3, 3, true);
 	namedWindow("Edges", CV_WINDOW_NORMAL);
-	imshow("Edges", edges);
+	//imshow("Edges", edges);
 
 	std::vector<Vec2f> Houghlines;
 	std::cout << "Hough transfroming..." << std::endl;
@@ -231,7 +231,7 @@ int main()
 		std::cin >> action;
 		Mat source;
 		const char* panel = "Preprocessing";
-		namedWindow(panel, CV_WINDOW_NORMAL);
+		/*namedWindow(panel, CV_WINDOW_NORMAL);
 		createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
 		createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
 		createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
@@ -241,7 +241,7 @@ int main()
 		createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
 		createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
 		createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
-
+*/
 		if (action == "all")
 		{
 			for (size_t i = 0; i < 13; i++)
@@ -256,17 +256,17 @@ int main()
 		}
 		else
 		{
-			while (action != "-1")
+			while (action != "q")
 			{
 				std::stringstream str;
 				str << action;
 				str >> imgIndex;
 				changeInput(0, &source);
 
+			//	waitKey();
+
 				std::cout << "enter action: \t";
 				std::cin >> action;
-
-				waitKey();
 			}
 		}
 	}

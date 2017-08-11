@@ -163,10 +163,16 @@ void calculateOutputPoints(Point2f* input, Point2f* output)
 	}
 	else
 	{
-		//output[1] = Point2f(firstPointPlace, firstPointPlace);
+		output[1] = Point2f(firstPointPlace, firstPointPlace);//b
 
-		//output[2].x = 
-		throw std::exception("unwritten piece of function!!!");
+		output[2].x = output[1].x + A4.width;
+		output[2].y = output[1].y;
+
+		output[3].x = output[2].x;
+		output[3].y = output[2].y + A4.height;
+
+		output[0].x = output[1].x;
+		output[0].y = output[3].y;
 	}
 }
 
@@ -178,9 +184,7 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 	Mat res = sortMatrix(showPoints);
 	Point2f inputPoints[4];
 	matrixBackToArray(res, inputPoints);
-	
-	std::cout << isQuadHor(inputPoints);
-	
+		
 	Point2f outputPoints[4];
 	calculateOutputPoints(inputPoints, outputPoints); 
 	for (size_t i = 0; i < 4; i++)
@@ -188,7 +192,7 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 		circle(pict, outputPoints[i], 3, Scalar(0, 255, 0), -1);
 	}
 
-	imshow("Points", pict);
+	//imshow("Points", pict);
 	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
 	std::cout << "Is horizontal = " << std::boolalpha << isHorizontal(res, pict, transMat) << std::endl;
 
@@ -196,7 +200,7 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 	isMatSorted(res);
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
 
-	imshow("Perspective", transformedMatrix);
+	//("Perspective", transformedMatrix);
 }
 
 bool isMatSorted(Mat & arr)
