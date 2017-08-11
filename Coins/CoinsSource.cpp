@@ -219,7 +219,7 @@ void changeInput(int, void* img)
 	Mat sourceCopy = imgMat->clone();
 	reduceSize(*imgMat);
 
-	Mat transMat = paperToRectangle(*sourceCopy, getA4Corners(*sourceCopy));
+	Mat transMat = paperToRectangle(sourceCopy, getA4Corners(sourceCopy));
 
 
 }
@@ -263,6 +263,8 @@ int main()
 				str << action;
 				str >> imgIndex;
 				changeInput(0, &source);
+				
+				waitKey();
 
 				if (waitKey() == 27)
 				{

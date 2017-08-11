@@ -32,3 +32,5 @@ bool isMatSorted(Mat& arr);
 bool isHorizontal(Mat& points, Mat& pict, Mat& transMat);
 
 Mat cutPaper(Mat& data, std::vector<Point2f> points);
+
+Mat& cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point> originalPoints, Mat& transMat);

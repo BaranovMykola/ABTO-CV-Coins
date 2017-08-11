@@ -312,3 +312,17 @@ Mat cutPaper(Mat & data, std::vector<Point2f> points)// to do!!!!
 	return res;
 }
 
+Mat & cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> originalPoints, Mat & transMat)
+{
+	std::vector<Point2f> outputPoints;
+	for (auto i : originalPoints)
+	{
+		outputPoints.push_back(transMat*i);
+	}
+
+	Mat dst;
+	perspectiveTransform(source, dst, transMat);
+	dst = dst(Rect(outputPoints[0], outputPoints[2]));
+	return dst;
+}
+
