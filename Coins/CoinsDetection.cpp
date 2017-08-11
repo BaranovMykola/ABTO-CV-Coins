@@ -192,7 +192,7 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 		circle(pict, outputPoints[i], 3, Scalar(0, 255, 0), -1);
 	}
 
-	//imshow("Points", pict);
+	imshow("Points", pict);
 	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
 	std::cout << "Is horizontal = " << std::boolalpha << isHorizontal(res, pict, transMat) << std::endl;
 
@@ -200,7 +200,7 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 	isMatSorted(res);
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
 
-	//("Perspective", transformedMatrix);
+	("Perspective", transformedMatrix);
 }
 
 bool isMatSorted(Mat & arr)

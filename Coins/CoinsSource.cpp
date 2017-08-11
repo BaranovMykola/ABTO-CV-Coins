@@ -263,7 +263,10 @@ int main()
 				str >> imgIndex;
 				changeInput(0, &source);
 
-			//	waitKey();
+				if (waitKey() == 27)
+				{
+					break;
+				}
 
 				std::cout << "enter action: \t";
 				std::cin >> action;
