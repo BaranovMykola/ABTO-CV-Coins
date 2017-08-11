@@ -216,9 +216,10 @@ void changeInput(int, void* img)
 	std::string path = a4 + name + ext;
 	Mat* imgMat = static_cast<Mat*>(img);
 	*imgMat = imread(path);
+	Mat sourceCopy = imgMat->clone();
 	reduceSize(*imgMat);
 
-	paperToRectangle(*imgMat, getA4Corners(*imgMat));
+	Mat transMat = paperToRectangle(*sourceCopy, getA4Corners(*sourceCopy));
 
 
 }

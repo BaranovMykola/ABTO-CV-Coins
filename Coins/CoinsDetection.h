@@ -25,7 +25,7 @@ const int PointsQuantity = 4;
 
 std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict,std::vector<std::set<cv::Point2f, Comp> > families);
 
-void paperToRectangle(Mat& pict, std::vector<cv::Point2f> points);
+Mat& paperToRectangle(Mat& pict, std::vector<cv::Point2f> points);
 
 bool isMatSorted(Mat& arr);
 

@@ -176,8 +176,8 @@ void calculateOutputPoints(Point2f* input, Point2f* output)
 	}
 }
 
-void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
-{ 
+Mat& paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
+{
 	std::vector<Point2f> orderedPoints;
 	Mat showPoints = transformVectorToMatrix(points);
 
@@ -201,6 +201,8 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
 
 	("Perspective", transformedMatrix);
+
+	return transMat;
 }
 
 bool isMatSorted(Mat & arr)
