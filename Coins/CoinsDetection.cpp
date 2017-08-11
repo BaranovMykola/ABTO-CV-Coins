@@ -84,6 +84,17 @@ Mat sortMatrix(Mat mat)
 	{
 		swap(res.at<Point2f>(1, 0), res.at<Point2f>(1, 1));
 	}
+
+	if (res.at<Point2f>(0, 0).y > res.at<Point2f>(1, 0).y)
+	{
+		swap(res.at<Point2f>(0, 0), res.at<Point2f>(1, 0));
+	}
+
+	if (res.at<Point2f>(0, 1).y > res.at<Point2f>(1, 1).y)
+	{
+		swap(res.at<Point2f>(0, 1), res.at<Point2f>(1, 1));
+	}
+
 	return res;
 }
 
@@ -101,15 +112,10 @@ Mat transformVectorToMatrix(std::vector<Point2f> points)
 	}
 	return res;
 }
+
 void orderbyPoints(std::vector<cv::Point2f>& points)
 {
 	std::vector<Point2f> orderedPoints;
-
-}
-
-void print()
-{
-	std::cout << "!!!!!!!!!!!!!!!!!!!!!!!";
 }
 
 std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict, std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
@@ -134,6 +140,7 @@ void matrixBackToArray( Mat data, Point2f* res)
 
 void calculateOutputPoints(Point2f* input, Point2f* output)
 {
+	//210 x 297
 	output[0] = input[0];
 
 	output[1].x = input[1].x;
@@ -157,9 +164,115 @@ void paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
 	
 	Point2f outputPoints[4];
 	calculateOutputPoints(inputPoints, outputPoints); 
+	for (size_t i = 0; i < 4; i++)
+	{
+		circle(pict, outputPoints[i], 3, Scalar(0, 255, 0), -1);
+	}
+	imshow("Points", pict);
 	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
+	std::cout << "Is horizontal = " << std::boolalpha << isHorizontal(res, pict, transMat) << std::endl;
 
 	Mat transformedMatrix(pict.size(), pict.type());
+	isMatSorted(res);
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
+	imshow("Perspective", transformedMatrix);
 }
- 
+
+bool isMatSorted(Mat & arr)
+{
+	bool sorted = true;
+	for (size_t i = 0; i < arr.cols; i++)
+	{
+		for (size_t j = 0; j < arr.rows; j++)
+		{
+			float x0;
+			float x1;
+			float y0;
+			float y1;
+			
+			if (j + 1 < arr.rows)
+			{
+				y0 = arr.at<Point2f>(j, i).y;
+				y1 = arr.at<Point2f>(j + 1, i).y;
+				if (y0 > y1)
+				{
+					sorted = false;
+				}
+			}
+			if (i + 1 < arr.cols)
+			{
+				x0 = arr.at<Point2f>(j, i).x;
+				x1 = arr.at<Point2f>(j, i + 1).x;
+				if (x0 > x1)
+				{
+					sorted = false;
+				}
+			}
+
+		}
+	}
+ 	return sorted;
+}
+
+inline cv::Point2f operator*(cv::Mat M, const cv::Point2f& p)
+{
+	cv::Mat_<double> src(3/*rows*/, 1 /* cols */);
+
+	src(0, 0) = p.x;
+	src(1, 0) = p.y;
+	src(2, 0) = 1.0;
+
+	cv::Mat_<double> dst = M*src; //USE MATRIX ALGEBRA 
+	return cv::Point2f(dst(0, 0), dst(1, 0));
+}
+
+bool isHorizontal(Mat & points, Mat & pict, Mat& transMat)
+{
+	if (!isMatSorted(points))
+	{
+		throw std::exception("Points are not sorted");
+	}
+
+	Point l0 = (points.at<Point2f>(0, 0) + points.at<Point2f>(0, 1))/2;
+	Point l1 = (points.at<Point2f>(1, 0) + points.at<Point2f>(1, 1)) / 2;
+
+	Point s0 = (points.at<Point2f>(0, 0) + points.at<Point2f>(1, 0)) / 2;
+	Point s1 = (points.at<Point2f>(0, 1) + points.at<Point2f>(1, 1)) / 2;
+
+	Line line0(l0, l1);
+	Line line1(s0, s1);
+
+	Point2f dst0;
+	Point2f dst1;
+	
+	int angle;
+
+	std::cout << "Angle of bigger line = ";
+	
+	if (norm(l0 - l1) > norm(s0 - s1))
+	{
+		angle = ((int)line0.angle() % 180);
+		//std::cout << ((int)line0.angle() % 180);
+		line(pict, l0, l1, Scalar::all(255));
+		dst0 = transMat*l0;
+		dst1 = transMat*l1;
+
+	}
+	else
+	{ 
+		angle  = ((int)line1.angle() % 180);
+		//std::cout << ((int)line1.angle()%180);
+		line(pict, s0, s1, Scalar::all(0));
+
+		dst0 = transMat*s0;
+		dst1 = transMat*s1;
+	}
+	std::cout << std::endl;
+
+	angle = abs((int)Line(dst0, dst1).angle()%180);
+	std::cout << "Long side is at " << angle << " angle grad" << std::endl;
+	imshow("Sides", pict);
+
+	return angle < 45 || angle > 180 - 45;
+}
+

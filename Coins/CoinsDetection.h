@@ -9,6 +9,9 @@
 #include"Line.h"
 
 using namespace cv;
+
+const Size A4(210, 297);
+
 class Comp
 {
 public:
@@ -16,8 +19,11 @@ public:
 };
 
 const int PointsQuantity = 4;
-void print();
 
 std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict,std::vector<std::set<cv::Point2f, Comp> > families);
 
 void paperToRectangle(Mat& pict, std::vector<cv::Point2f> points);
+
+bool isMatSorted(Mat& arr);
+
+bool isHorizontal(Mat& points, Mat& pict, Mat& transMat);

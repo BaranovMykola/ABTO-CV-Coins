@@ -22,9 +22,9 @@ int marginK = 10;
 int bil_d = 30;
 int canny_low = 80;
 int hough_rho = 0;
-int hough_thresh = 35;
+int hough_thresh = 70;
 int minGrad = 0;
-int imgIndex = 6; // 8 crashes
+int imgIndex = 7; // 8, 6 crashes
 
 std::vector<Line> getLines(std::vector<Vec2f> lines)
 {
@@ -190,11 +190,12 @@ std::vector<Point2f> getA4Corners(Mat& input)
 	HoughLines(edges, Houghlines, hough_rho + 1, CV_PI / 180.0, hough_thresh, 0, 0, minGrad*(CV_PI / 180));
 	auto lines = getLines(Houghlines);
 
-	Mat result = input.clone();
+	Mat result = input;
 	drawLines(result, lines);
 	auto points = findRectangleCorners(lines, result);
 
 	auto families = partitionPoints2Families(points);
+
 	for each (auto var in families)
 	{
 		drawPoint(var, result, Scalar::all(255));
@@ -223,6 +224,8 @@ void changeInput(int, void* img)
 
 int main()
 {
+	std::string action;
+	std::cin >> action;
 	Mat source;
 	const char* panel = "Preprocessing";
 	namedWindow(panel, CV_WINDOW_NORMAL);
@@ -236,7 +239,25 @@ int main()
 	createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
 	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
 
-	changeInput(0, &source);
+	if (action == "all")
+	{
+		for (size_t i = 0; i < 13; i++)
+		{
+			imgIndex = i;
+			changeInput(0, &source);
+			if (waitKey() == 27)
+			{
+				break;
+			}
+		}
+	}
+	else
+	{
+		std::stringstream str;
+		str << action;
+		str >> imgIndex;
+		changeInput(0, &source);
+	}
 
 	waitKey();
 	return 0;
