@@ -217,7 +217,6 @@ void changeInput(int, void* img)
 	Mat* imgMat = static_cast<Mat*>(img);
 	*imgMat = imread(path);
 	Mat sourceCopy = imgMat->clone();
-	reduceSize(sourceCopy);
 
 	auto corners = getA4Corners(sourceCopy);
 	Mat a4corners;
