@@ -16,6 +16,7 @@
 #include "A4CornersDetection.h"
 #include "PointsComparation.h"
 #include "PaperReconstruction.h"
+#include "CoinsDetection.h"
 
 using namespace cv;
 
@@ -97,8 +98,11 @@ void changeInput(int, void* img)
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 	cropInterestRegion(dst, transfromedPoints);
 
-	namedWindow("Result", WINDOW_AUTOSIZE);
-	imshow("Result", dst);
+
+	mainCoinsDetection(dst);
+
+	/*namedWindow("Result", WINDOW_AUTOSIZE);
+	imshow("Result", dst);*/
 
 }
 
