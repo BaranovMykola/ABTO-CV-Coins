@@ -53,50 +53,32 @@
 //	return toReturn;
 //}
 
-Mat sortMatrix(Mat mat)
+void sortMatrix(Mat mat)
 {
-	Mat res = mat.clone();
-	if (res.at<Point2f>(0, 0).x > res.at<Point2f>(0, 1).x)
+	for (size_t c = 0; c < 2; c++) // for 2x2
 	{
-		swap(res.at<Point2f>(0, 0), res.at<Point2f>(0, 1));
-	}
+		for (int i = 0; i < mat.rows; i++)
+		{
+			Point2f* row = mat.ptr<Point2f>(i);
+			std::sort(row, row + mat.cols, [](auto l, auto r)
+			{
+				return l.x < r.x;
+			});
+		}
 
-	if (res.at<Point2f>(1, 0).x > res.at<Point2f>(1, 1).x)
-	{
-		swap(res.at<Point2f>(1, 0), res.at<Point2f>(1, 1));
+		for (int i = 0; i < mat.rows-1; i++)
+		{
+			for (int j = 0; j < mat.cols; j++)
+			{
+				Point2f& up = mat.at<Point2f>(i,j);
+				Point2f& down = mat.at<Point2f>(i+1, j);
+				if (up.y > down.y)
+				{
+					std::swap(up, down);
+				}
+			}
+		}
 	}
-
-	if (res.at<Point2f>(0, 0).y > res.at<Point2f>(1,0).y)
-	{
-		swap(res.at<Point2f>(0, 0), res.at<Point2f>(1,0));
-	}
-
-	if (res.at<Point2f>(0,1).y > res.at<Point2f>(1, 1).y)
-	{
-		swap(res.at<Point2f>(0, 1), res.at<Point2f>(1, 1));
-	}
-
-	if (res.at<Point2f>(0, 0).x > res.at<Point2f>(0, 1).x)
-	{
-		swap(res.at<Point2f>(0, 0), res.at<Point2f>(0, 1));
-	}
-
-	if (res.at<Point2f>(1, 0).x > res.at<Point2f>(1, 1).x)
-	{
-		swap(res.at<Point2f>(1, 0), res.at<Point2f>(1, 1));
-	}
-
-	if (res.at<Point2f>(0, 0).y > res.at<Point2f>(1, 0).y)
-	{
-		swap(res.at<Point2f>(0, 0), res.at<Point2f>(1, 0));
-	}
-
-	if (res.at<Point2f>(0, 1).y > res.at<Point2f>(1, 1).y)
-	{
-		swap(res.at<Point2f>(0, 1), res.at<Point2f>(1, 1));
-	}
-
-	return res;
 }
 
 Mat transformVectorToMatrix(std::vector<Point2f> points)
@@ -147,57 +129,34 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k = 1)
 {
 	//210 x 297
 	int firstPointPlace = 10*k;
-	if (isQuadHor(input))
-	{
+	short shift = isQuadHor(input) ? 0 : 1;
 
-		output[0] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
+		output[0+shift] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
 
-		output[1].x = output[0].x+A4.width*k;//b - upper right point
-		output[1].y = output[0].y;
+		output[1+shift].x = output[0+shift].x+A4.width*k;//b - upper right point
+		output[1+shift].y = output[0+shift].y;
 
-		output[2].x = output[1].x;//c - down right point
-		output[2].y = output[1].y + A4.height*k;
+		output[2+shift].x = output[1+shift].x;//c - down right point
+		output[2+shift].y = output[1+shift].y + A4.height*k;
 
-		output[3].x = output[0].x;// down left point
-		output[3].y = output[2].y;
-	}
-	else
-	{
-		output[1] = Point2f(firstPointPlace, firstPointPlace);//b
-
-		output[2].x = output[1].x + A4.width*k;
-		output[2].y = output[1].y;
-
-		output[3].x = output[2].x;
-		output[3].y = output[2].y + A4.height*k;
-
-		output[0].x = output[1].x;
-		output[0].y = output[3].y;
-	}
+		output[(3+shift)%4].x = output[shift].x;// down left point
+		output[(3+shift)%4].y = output[2+shift].y;
 }
 
 Mat paperToRectangle(Mat & pict, std::vector<cv::Point2f> points, Mat& a4corners)
 {
-	Mat showPoints = transformVectorToMatrix(points);
+	Mat pointsMat = transformVectorToMatrix(points);
+	sortMatrix(pointsMat);
+	a4corners = pointsMat;
 
-	Mat res = sortMatrix(showPoints);
-	a4corners = res;
 	Point2f inputPoints[4];
-	matrixBackToArray(res, inputPoints);
-		
 	Point2f outputPoints[4];
+	matrixBackToArray(pointsMat, inputPoints);
+	
 	calculateOutputPoints(inputPoints, outputPoints); 
-	for (size_t i = 0; i < 4; i++)
-	{
-		circle(pict, outputPoints[i], 3, Scalar(0, 255, 0), -1);
-	}
 
-	imshow("Points", pict);
 	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
-	std::cout << "Is horizontal = " << std::boolalpha << isHorizontal(res, pict, transMat) << std::endl;
-
 	Mat transformedMatrix(pict.size(), pict.type());
-	isMatSorted(res);
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
 
 	("Perspective", transformedMatrix);
@@ -317,7 +276,7 @@ Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> origi
 	std::vector<Point2f> outputPoints;
 	Point2f originalDiscretePoints[4];
 
-	a4Corners = sortMatrix(a4Corners);
+	sortMatrix(a4Corners);
 	originalDiscretePoints[0] = (Point)a4Corners.at<Point2f>(0, 0);
 	originalDiscretePoints[1] = (Point)a4Corners.at<Point2f>(0, 1);
 	originalDiscretePoints[2] = (Point)a4Corners.at<Point2f>(1, 1);
