@@ -73,7 +73,7 @@ inline cv::Point2f operator*(cv::Mat& M, const cv::Point2f& p);
 
 Reconstructs paper by two sets of four points
 */
-Mat cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point> originalPoints, Mat& transMat, Size procSize);
+void cropInterestRegion(Mat& source, std::vector<Point> pointsRect);
 
 /*@brief
 

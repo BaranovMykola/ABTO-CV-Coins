@@ -136,39 +136,8 @@ inline cv::Point2f operator*(cv::Mat& M, const cv::Point2f& p)
 	return cv::Point2f(dst(0, 0), dst(1, 0));
 }
 
-Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point> originalPoints, Mat & transMat, Size procSize)
+void cropInterestRegion(Mat & source, std::vector<Point> pointsRect)
 {
-	std::vector<Point2f> outputPoints;
-	Point2f originalDiscretePoints[4];
-
-	sortMatrix(a4Corners);
-	originalDiscretePoints[0] = (Point)a4Corners.at<Point2f>(0, 0);
-	originalDiscretePoints[1] = (Point)a4Corners.at<Point2f>(0, 1);
-	originalDiscretePoints[2] = (Point)a4Corners.at<Point2f>(1, 1);
-	originalDiscretePoints[3] = (Point)a4Corners.at<Point2f>(1, 0);
-
-	Point2f outputlDiscretePoints[4];
-
-
-	float k = source.size().width / procSize.width;
-	int j = 0;
-	for (Point2f& i : originalDiscretePoints)
-	{
-		i = originalDiscretePoints[j++];
-		i *= k;
-	}
-
-	calculateOutputPoints(originalDiscretePoints, outputlDiscretePoints, k);
-
-	Mat newTransMat = getPerspectiveTransform(originalDiscretePoints, outputlDiscretePoints);
-
-	Mat dst;
-	warpPerspective(source, dst, newTransMat, source.size());
-	auto pt0 = outputlDiscretePoints[0];
-	auto pt1 = outputlDiscretePoints[2];
-	//pt0 *= k;
-	//pt1 *= k;
-	auto r = Rect(pt0, pt1);
-	Mat res = dst(r);
-	return res;
+	auto region = Rect(pointsRect[0], pointsRect[2]);
+	source = source(region);
 }

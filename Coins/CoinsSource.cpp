@@ -87,22 +87,18 @@ void changeInput(int, void* img)
 	*imgMat = imread(path);
 	Mat sourceCopy = imgMat->clone();
 
-
 	auto corners = getA4Corners(sourceCopy, bilaterialDiam, cannyThresh, houghThresh, minGradLines, minGradLinesOverlap, ::distance);
 	std::vector<Point> sourceCorners;
 	float k = imgMat->size().width / sourceCopy.cols;
 	std::transform(corners.begin(), corners.end(), std::inserter(sourceCorners, sourceCorners.begin()), [=](auto i) { return i*k; });
-	//Mat a4corners;
-
-	//Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
-	//Mat dst = cropInterestRegion(*imgMat, a4corners, corners, transMat, sourceCopy.size());
 
 	Mat dst;
 	std::vector<Point> transfromedPoints;
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
+	cropInterestRegion(dst, transfromedPoints);
 
 	namedWindow("Result", WINDOW_AUTOSIZE);
-	//imshow("Result", dst);
+	imshow("Result", dst);
 
 }
 
@@ -114,7 +110,6 @@ void print_container(std::insert_iterator<V<T, Alloc>> &con)
 int main()
 {
 	std::string action;
-	std::cin >> action;
 	Mat source;
 	const char* panel = "Preprocessing";
 	/*namedWindow(panel, CV_WINDOW_NORMAL);
@@ -127,7 +122,9 @@ int main()
 	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
 	createTrackbar("L minGradCust", panel, &minGradLinesOverlap, 90, changeInput, &source);
 	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
-*/
+	*/
+	std::cout << ">> ";
+	std::cin >> action;
 	if (action == "all")
 	{
 		for (size_t i = 0; i < 13; i++)
@@ -154,7 +151,7 @@ int main()
 				break;
 			}
 
-			std::cout << "enter action: \t";
+			std::cout << ">> ";
 			std::cin >> action;
 		}
 	}
