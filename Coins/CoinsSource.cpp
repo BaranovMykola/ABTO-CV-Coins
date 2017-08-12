@@ -231,6 +231,11 @@ void changeInput(int, void* img)
 
 int main()
 {
+	for (size_t i = 0; i < 10; i++)
+	{
+		std::cout << i << "%4 -> " << i % 4 << std::endl;
+	}
+	system("pause");
 	std::string action;
 	std::cin >> action;
 	Mat source;

@@ -131,7 +131,7 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k = 1)
 	int firstPointPlace = 10*k;
 	short shift = isQuadHor(input) ? 0 : 1;
 
-		output[0+shift] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
+		output[shift] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
 
 		output[1+shift].x = output[0+shift].x+A4.width*k;//b - upper right point
 		output[1+shift].y = output[0+shift].y;
@@ -148,19 +148,13 @@ Mat paperToRectangle(Mat & pict, std::vector<cv::Point2f> points, Mat& a4corners
 	Mat pointsMat = transformVectorToMatrix(points);
 	sortMatrix(pointsMat);
 	a4corners = pointsMat;
-
 	Point2f inputPoints[4];
 	Point2f outputPoints[4];
 	matrixBackToArray(pointsMat, inputPoints);
-	
 	calculateOutputPoints(inputPoints, outputPoints); 
-
 	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
 	Mat transformedMatrix(pict.size(), pict.type());
 	warpPerspective(pict, transformedMatrix, transMat, pict.size());
-
-	("Perspective", transformedMatrix);
-
 	return transMat;
 }
 
@@ -210,65 +204,6 @@ inline cv::Point2f operator*(cv::Mat M, const cv::Point2f& p)
 
 	cv::Mat_<double> dst = M*src; //USE MATRIX ALGEBRA 
 	return cv::Point2f(dst(0, 0), dst(1, 0));
-}
-
-bool isHorizontal(Mat & points, Mat & pict, Mat& transMat)
-{
-	if (!isMatSorted(points))
-	{
-		throw std::exception("Points are not sorted");
-	}
-
-	Point l0 = (points.at<Point2f>(0, 0) + points.at<Point2f>(0, 1))/2;
-	Point l1 = (points.at<Point2f>(1, 0) + points.at<Point2f>(1, 1)) / 2;
-
-	Point s0 = (points.at<Point2f>(0, 0) + points.at<Point2f>(1, 0)) / 2;
-	Point s1 = (points.at<Point2f>(0, 1) + points.at<Point2f>(1, 1)) / 2;
-
-	Line line0(l0, l1);
-	Line line1(s0, s1);
-
-	Point2f dst0;
-	Point2f dst1;
-	
-	int angle;
-
-	std::cout << "Angle of bigger line = ";
-	
-	if (norm(l0 - l1) > norm(s0 - s1))
-	{
-		angle = ((int)line0.angle() % 180);
-		//std::cout << ((int)line0.angle() % 180);
-		line(pict, l0, l1, Scalar::all(255));
-		dst0 = transMat*l0;
-		dst1 = transMat*l1;
-
-	}
-	else
-	{ 
-		angle  = ((int)line1.angle() % 180);
-		//std::cout << ((int)line1.angle()%180);
-		line(pict, s0, s1, Scalar::all(0));
-
-		dst0 = transMat*s0;
-		dst1 = transMat*s1;
-	}
-	std::cout << std::endl;
-
-	angle = abs((int)Line(dst0, dst1).angle()%180);
-	std::cout << "Long side is at " << angle << " angle grad" << std::endl;
-	//imshow("Sides", pict);
-
-	return angle < 45 || angle > 180 - 45;
-}
-
-Mat cutPaper(Mat & data, std::vector<Point2f> points)// to do!!!!
-{
-	Mat res;
-	Mat mask(data.size(), CV_8UC1);
-	rectangle(mask,Rect(points[0], points[2]), Scalar(255), -1);
-	data.copyTo(res, mask);
-	return res;
 }
 
 Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> originalPoints, Mat & transMat, Size procSize)
