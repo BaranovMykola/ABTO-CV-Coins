@@ -220,9 +220,10 @@ void changeInput(int, void* img)
 
 	auto corners = getA4Corners(sourceCopy);
 	Mat a4corners;
-	Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
 
+	Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
 	Mat dst = cropInterestRegion(*imgMat, a4corners, corners, transMat, sourceCopy.size());
+
 	namedWindow("Result", WINDOW_AUTOSIZE);
 	imshow("Result", dst);
 

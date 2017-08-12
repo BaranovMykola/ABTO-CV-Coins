@@ -107,8 +107,7 @@ Mat transformVectorToMatrix(std::vector<Point2f> points)
 	{
 		for (size_t j = 0; j < res.cols; j++)
 		{
-			res.at<Point2f>(i, j) = points[count];
-			++count;
+			res.at<Point2f>(i, j) = points[count++];
 		}
 	}
 	return res;
@@ -179,7 +178,6 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k = 1)
 
 Mat paperToRectangle(Mat & pict, std::vector<cv::Point2f> points, Mat& a4corners)
 {
-	std::vector<Point2f> orderedPoints;
 	Mat showPoints = transformVectorToMatrix(points);
 
 	Mat res = sortMatrix(showPoints);
