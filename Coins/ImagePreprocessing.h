@@ -4,7 +4,6 @@
 
 #include "PointsComparation.h"
 #include "Line.h"
-//#include ""
 
 using namespace cv;
 
