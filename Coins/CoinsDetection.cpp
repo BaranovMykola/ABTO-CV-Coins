@@ -3,6 +3,8 @@
 #include <numeric>
 #include <iterator>
 
+
+
 void sortMatrix(Mat mat)
 {
 	for (size_t c = 0; c < 2; c++) // for 2x2
@@ -55,7 +57,7 @@ bool isQuadHor(Point2f arr[])
 	return ((norm(arr[0] - arr[1]) + norm(arr[2] - arr[3]))  >	(norm(arr[0] - arr[3]) + norm(arr[1] - arr[2])));
 }
 
-std::vector<cv::Point> accumulatePointFamilies(std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
+std::vector<cv::Point> accumulatePointFamilies(std::vector<std::set<cv::Point2f,  PointComparatorX> > families)//what if vectorsize < 4
 {
 	std::vector<cv::Point> points;
 	for (size_t i = 0; i < PointsQuantity; i++)

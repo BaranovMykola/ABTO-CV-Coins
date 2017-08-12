@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="A4CornersDetection.cpp" />
+    <ClCompile Include="CoinsDetection.cpp" />
+    <ClCompile Include="CoinsSource.cpp" />
+    <ClCompile Include="ImagePreprocessing.cpp" />
+    <ClCompile Include="Line.cpp" />
+    <ClCompile Include="PointsComparation.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="A4CornersDetection.h" />
+    <ClInclude Include="CoinsDetection.h" />
+    <ClInclude Include="ImagePreprocessing.h" />
+    <ClInclude Include="Line.h" />
+    <ClInclude Include="PointsComparation.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE7B3952-B91D-456F-B48A-71C5E8A5E9FB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -153,15 +168,6 @@
       <AdditionalDependencies>opencv_world320d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="CoinsDetection.cpp" />
-    <ClCompile Include="CoinsSource.cpp" />
-    <ClCompile Include="Line.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CoinsDetection.h" />
-    <ClInclude Include="Line.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

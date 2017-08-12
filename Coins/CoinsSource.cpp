@@ -12,6 +12,9 @@
 
 #include "Line.h"
 #include "CoinsDetection.h"
+#include "ImagePreprocessing.h"
+#include "A4CornersDetection.h"
+#include "PointsComparation.h"
 
 using namespace cv;
 
@@ -26,148 +29,9 @@ int hough_thresh = 70;
 int minGrad = 0;
 int imgIndex = 7; // 8, 6 crashes
 
-std::vector<Line> getLines(std::vector<Vec2f> lines)
-{
-	std::vector<Line> points;
-	for (size_t i = 0; i < lines.size(); i++)
-	{
-		float rho = lines[i][0], theta = lines[i][1];
-		Point2f pt1, pt2;
-		double a = cos(theta), b = sin(theta);
-		double x0 = a*rho, y0 = b*rho;
-		pt1.x = cvRound(x0 + 1000 * (-b));
-		pt1.y = cvRound(y0 + 1000 * (a));
-		pt2.x = cvRound(x0 - 1000 * (-b));
-		pt2.y = cvRound(y0 - 1000 * (a));
-		points.emplace_back(pt1, pt2);
-	}
-	return points;
-}
 
-std::vector<Point2f> findRectangleCorners(std::vector<Line> lines, Mat& img)
-{
-	std::vector<Point2f> points;
-	int count = 0;
-	for each (auto i in lines)
-	{
-		for each (auto j in lines)
-		{
-			double x;
-			double y;
-			if (i.vertical != j.vertical)
-			{
-				if (i.vertical)
-				{
-					x = i.a;
-					y = j.a*x + j.b;
-				}
-				else if (j.vertical)
-				{
-					x = j.a;
-					y = i.a*x + i.b;
-				}
-			}
-			else if (i.a != j.a && !i.vertical)
-			{
-				x = -(i.b - j.b) / (i.a - j.a);
-				y = i.a*x + i.b;
-			}
-			else
-			{
-				continue;
-			}
-			if (x > 0 && y > 0 && x < img.cols && y < img.rows &&
-				((int)abs(i.angle() - j.angle())) % 180 > minGradCustom && ((int)abs(i.angle() - j.angle())) % 180 < 180 - minGradCustom)
-			{
-				points.push_back(Point2f(x, y));
-			}
-		}
-	}
-	return points;
-}
 
-std::vector<std::set<Point2f, Comp> > partitionPoints2Families(std::vector<Point2f> points)
-{
-	std::vector<std::set<Point2f, Comp> > families;
-	if (points.size() > 3500) { std::cout << "Point threshold reached" << std::endl;return families; }
-	if (points.size() > 0)
-	{
-		int count = 0;
-		auto a = std::set<Point2f, Comp>({ points.front() });
-		families.push_back(a);
-		for each (auto var in points)
-		{
-			++count;
-			if (count % 100 == 0)
-			{
-				std::cout << "Processing points..." << count << " \ " << points.size() << std::endl;
-			}
-			bool inserted = false;
-			for (auto i = families.begin(); i < families.end(); ++i)
-			{
-				double averageDist = std::accumulate(i->begin(), i->end(), 0.0, [&](double sum, Point2f p) { return static_cast<double>(cv::norm(var - p)) + sum; });
-				/*if (norm(*(i->begin()) - var) < distance)
-				{
-					i->insert(var);
-					inserted = true;
-					break;
-				}*/
-				//averageDist+=
-				averageDist /= i->size();
-				if (averageDist < distance)
-				{
-					i->insert(var);
-					inserted = true;
-				}
-			}
-			if (!inserted)
-			{
-				families.push_back(std::set<Point2f, Comp>({ var }));
-			}
-		}
-	}
-	return families;
-}
 
-void drawPoint(std::set<Point2f, Comp> points, Mat& img, Scalar color, bool mult = false)
-{
-	if (mult)
-	{
-		for each (auto var in points)
-		{
-			circle(img, var, 5, Scalar(0, 255, 0), -1);
-		}
-	}
-	else
-	{
-		Point2f sum = std::accumulate(points.begin(), points.end(), Point2f(0, 0));
-		sum = sum / (double)points.size();
-		circle(img, sum, 5, color, 1);
-	}
-	//imshow("Points", img);
-}
-
-void drawLines(Mat& img, std::vector<Line> lines)
-{
-	std::cout << "Drawing lines..." << std::endl;
-	for (size_t i = 0; i < lines.size(); i++)
-	{
-		Point pt1 = lines[i].pt0;
-		Point pt2 = lines[i].pt1;
-		line(img, pt1, pt2, Scalar(0, 0, 255), 1, LINE_AA);
-	}
-	//imshow("Lines", img);
-}
-
-void reduceSize(Mat& img)
-{
-	Mat dst;
-	while (img.cols >= 1200 || img.rows >= 1200)
-	{
-		pyrDown(img, dst);
-		img = dst;
-	}
-}
 
 std::vector<Point> getA4Corners(Mat& input)
 {
@@ -192,17 +56,17 @@ std::vector<Point> getA4Corners(Mat& input)
 
 	Mat result = input;
 	drawLines(result, lines);
-	auto points = findRectangleCorners(lines, result);
+	auto points = findRectangleCorners(lines, result.size(), minGradCustom);
 
-	auto families = partitionPoints2Families(points);
+	auto families = partitionPoints2Families(points, distance);
 
 	for each (auto var in families)
 	{
 		drawPoint(var, result, Scalar::all(255));
 	}
 
-	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
-	return accumulatePointFamilies(std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + PointsQuantity));
+	std::sort(families.begin(), families.end(), [](std::set<Point2f,  PointComparatorX> l, std::set<Point2f,  PointComparatorX> r) { return l.size() > r.size(); });
+	return accumulatePointFamilies(std::vector<std::set<Point2f,  PointComparatorX> >(families.begin(), families.begin() + PointsQuantity));
 }
 
 void changeInput(int, void* img)
