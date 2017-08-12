@@ -23,12 +23,12 @@ bool isQuadHor(Point2f arr[]);
 
 const int PointsQuantity = 4;
 
-std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict,std::vector<std::set<cv::Point2f, Comp> > families);
+std::vector<cv::Point> accumulatePointFamilies(std::vector<std::set<cv::Point2f, Comp> > families);
 
-Mat paperToRectangle(Mat& pict, std::vector<cv::Point2f> points, Mat& a4Corners);
+Mat paperToRectangle(Mat& pict, std::vector<cv::Point> points, Mat& a4Corners);
 
 bool isMatSorted(Mat& arr);
 
 Mat cutPaper(Mat& data, std::vector<Point2f> points);
 
-Mat cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point2f> originalPoints, Mat& transMat, Size procSize);
+Mat cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point> originalPoints, Mat& transMat, Size procSize);

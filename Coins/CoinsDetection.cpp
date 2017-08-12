@@ -3,56 +3,6 @@
 #include <numeric>
 #include <iterator>
 
-//void removeValue(std::vector<Point2f> data, std::vector<Point2f>::iterator it)
-//{
-//	
-//}
-//
-//Point2f min_x_coordinate(std::vector<Point_<float>>& points)
-//{
-//	
-//	auto it = (std::min_element(points.begin(),points.end(), [](cv::Point_<float>pl, cv::Point_<float> pr)
-//	{
-//		return pl.x < pr.x;
-//	}));
-//	Point2f toReturn = *it;
-//	points.erase(it);
-//	return toReturn;
-//}
-//
-//Point2f min_y_coordinate(std::vector<Point_<float>>& points)
-//{
-//	auto it = std::min_element(points.begin(), points.end(), [](cv::Point_<float>pl, cv::Point_<float> pr)
-//	{
-//		return pl.y < pr.y;
-//	});	
-//	Point2f toReturn = *it;
-//	points.erase(it);
-//	return toReturn;
-//}
-//
-//Point2f max_x_coordinate(std::vector<Point2f>& points)
-//{
-//	auto it = max_element(points.begin(), points.end(), [](cv::Point2f pl, cv::Point2f pr)
-//	{
-//		return pl.x < pr.x;
-//	});
-//	Point2f toReturn = *it;
-//	points.erase(it);
-//	return toReturn;
-//}
-//
-//Point2f max_y_coordinate(std::vector<Point2f>& points)
-//{
-//	auto it = max_element(points.begin(), points.end(), [](cv::Point2f pl, cv::Point2f pr)
-//	{
-//		return pl.y < pr.y;
-//	});
-//	Point2f toReturn = *it;
-//	points.erase(it);
-//	return toReturn;
-//}
-
 void sortMatrix(Mat mat)
 {
 	for (size_t c = 0; c < 2; c++) // for 2x2
@@ -81,7 +31,7 @@ void sortMatrix(Mat mat)
 	}
 }
 
-Mat transformVectorToMatrix(std::vector<Point2f> points)
+Mat transformVectorToMatrix(std::vector<Point> points)
 {
 	Mat res(2, 2, CV_32FC2);
 	int count = 0;
@@ -105,16 +55,16 @@ bool isQuadHor(Point2f arr[])
 	return ((norm(arr[0] - arr[1]) + norm(arr[2] - arr[3]))  >	(norm(arr[0] - arr[3]) + norm(arr[1] - arr[2])));
 }
 
-std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict, std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
+std::vector<cv::Point> accumulatePointFamilies(std::vector<std::set<cv::Point2f, Comp> > families)//what if vectorsize < 4
 {
-	std::vector<cv::Point2f> res;
+	std::vector<cv::Point> points;
 	for (size_t i = 0; i < PointsQuantity; i++)
 	{
 		cv::Point2f sum = std::accumulate(families[i].begin(), families[i].end(), cv::Point2f(0, 0));
 		sum = sum / (double)families[i].size();
-		res.push_back(sum);
-	}
-	return res;
+		points.push_back(sum);
+	}	
+	return points;
 }
 
 void matrixBackToArray( Mat data, Point2f* res)
@@ -143,7 +93,7 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k = 1)
 		output[(3+shift)%4].y = output[2+shift].y;
 }
 
-Mat paperToRectangle(Mat & pict, std::vector<cv::Point2f> points, Mat& a4corners)
+Mat paperToRectangle(Mat & pict, std::vector<cv::Point> points, Mat& a4corners)
 {
 	Mat pointsMat = transformVectorToMatrix(points);
 	sortMatrix(pointsMat);
@@ -206,7 +156,7 @@ inline cv::Point2f operator*(cv::Mat M, const cv::Point2f& p)
 	return cv::Point2f(dst(0, 0), dst(1, 0));
 }
 
-Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> originalPoints, Mat & transMat, Size procSize)
+Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point> originalPoints, Mat & transMat, Size procSize)
 {
 	std::vector<Point2f> outputPoints;
 	Point2f originalDiscretePoints[4];

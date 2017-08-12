@@ -169,7 +169,7 @@ void reduceSize(Mat& img)
 	}
 }
 
-std::vector<Point2f> getA4Corners(Mat& input)
+std::vector<Point> getA4Corners(Mat& input)
 {
 	reduceSize(input);
 	Mat bilateral;
@@ -202,7 +202,7 @@ std::vector<Point2f> getA4Corners(Mat& input)
 	}
 
 	std::sort(families.begin(), families.end(), [](std::set<Point2f, Comp> l, std::set<Point2f, Comp> r) { return l.size() > r.size(); });
-	return accumulatePointFamilies(result, std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + PointsQuantity));
+	return accumulatePointFamilies(std::vector<std::set<Point2f, Comp> >(families.begin(), families.begin() + PointsQuantity));
 }
 
 void changeInput(int, void* img)
@@ -231,11 +231,6 @@ void changeInput(int, void* img)
 
 int main()
 {
-	for (size_t i = 0; i < 10; i++)
-	{
-		std::cout << i << "%4 -> " << i % 4 << std::endl;
-	}
-	system("pause");
 	std::string action;
 	std::cin >> action;
 	Mat source;
