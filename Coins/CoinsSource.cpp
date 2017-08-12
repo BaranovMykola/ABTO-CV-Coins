@@ -9,6 +9,7 @@
 #include <string>
 #include <future>
 #include <sstream>
+#include <iterator>
 
 #include "Line.h"
 #include "ImagePreprocessing.h"
@@ -20,11 +21,11 @@ using namespace cv;
 
 int distance = 29;
 int minLineDist = 30;
-int minGradCustom = 10;
-int bil_d = 30;
-int canny_low = 80;
-int hough_thresh = 70;
-int minGrad = 0;
+int minGradLinesOverlap = 10;
+int bilaterialDiam = 30;
+int cannyThresh = 80;
+int houghThresh = 70;
+int minGradLines = 0;
 int imgIndex = 7; // 8, 6 crashes
 
 
@@ -86,17 +87,30 @@ void changeInput(int, void* img)
 	*imgMat = imread(path);
 	Mat sourceCopy = imgMat->clone();
 
-	auto corners = getA4Corners(sourceCopy, bil_d, canny_low, hough_thresh, minGrad, minGradCustom, distance);
-	Mat a4corners;
 
-	Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
-	Mat dst = cropInterestRegion(*imgMat, a4corners, corners, transMat, sourceCopy.size());
+	auto corners = getA4Corners(sourceCopy, bilaterialDiam, cannyThresh, houghThresh, minGradLines, minGradLinesOverlap, ::distance);
+	std::vector<Point> sourceCorners;
+	float k = imgMat->size().width / sourceCopy.cols;
+	std::transform(corners.begin(), corners.end(), std::inserter(sourceCorners, sourceCorners.begin()), [=](auto i) { return i*k; });
+	//Mat a4corners;
+
+	//Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
+	//Mat dst = cropInterestRegion(*imgMat, a4corners, corners, transMat, sourceCopy.size());
+
+	Mat dst;
+	std::vector<Point> transfromedPoints;
+	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 
 	namedWindow("Result", WINDOW_AUTOSIZE);
-	imshow("Result", dst);
+	//imshow("Result", dst);
 
 }
 
+template <typename T, typename Alloc, template <typename, typename> class V>
+void print_container(std::insert_iterator<V<T, Alloc>> &con)
+{
+	
+}
 int main()
 {
 	std::string action;
@@ -105,13 +119,13 @@ int main()
 	const char* panel = "Preprocessing";
 	/*namedWindow(panel, CV_WINDOW_NORMAL);
 	createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
-	createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
-	createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
+	createTrackbar("B diameter", panel, &bilaterialDiam, 50, changeInput, &source);
+	createTrackbar("C low", panel, &cannyThresh, 900, changeInput, &source);
 	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
-	createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
-	createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
+	createTrackbar("H thresh", panel, &houghThresh, 900, changeInput, &source);
+	createTrackbar("H min grad", panel, &minGradLines, 90, changeInput, &source);
 	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
-	createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
+	createTrackbar("L minGradCust", panel, &minGradLinesOverlap, 90, changeInput, &source);
 	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
 */
 	if (action == "all")

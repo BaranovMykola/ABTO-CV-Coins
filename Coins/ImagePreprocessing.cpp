@@ -1,12 +1,11 @@
 #include "ImagePreprocessing.h"
 
 #include <opencv2\imgproc.hpp>
+#include <opencv2\highgui.hpp>
 #include <set>
 #include <vector>
 #include <numeric>
 #include <iostream>
-
-	/*888888888888888888888888888*/ #include "CoinsDetection.h"
 
 void reduceSize(Mat& img)
 {
@@ -35,7 +34,6 @@ void drawPoint(std::set<Point2f, PointComparatorX> points, Mat& img, Scalar colo
 		sum = sum / (double)points.size();
 		circle(img, sum, 5, color, 1);
 	}
-	imshow("Points", img);
 }
 
 void drawLines(Mat& img, std::vector<Line> lines)
@@ -47,5 +45,4 @@ void drawLines(Mat& img, std::vector<Line> lines)
 		Point pt2 = lines[i].pt1;
 		line(img, pt1, pt2, Scalar(0, 0, 255), 1, LINE_AA);
 	}
-	imshow("Lines", img);
 }

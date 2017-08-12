@@ -2,6 +2,7 @@
 
 #include <opencv2\imgproc.hpp>
 #include <numeric>
+#include <iterator>
 
 void sortMatrix(Mat& mat)
 {
@@ -85,21 +86,6 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k)
 
 	output[(3 + shift) % 4].x = output[shift].x;// down left point
 	output[(3 + shift) % 4].y = output[2 + shift].y;
-}
-
-Mat paperToRectangle(Mat & pict, std::vector<cv::Point> points, Mat& a4corners)
-{
-	Mat pointsMat = transformVectorToMatrix(points);
-	sortMatrix(pointsMat);
-	a4corners = pointsMat;
-	Point2f inputPoints[4];
-	Point2f outputPoints[4];
-	matrixBackToArray(pointsMat, inputPoints);
-	calculateOutputPoints(inputPoints, outputPoints);
-	Mat transMat = getPerspectiveTransform(inputPoints, outputPoints);
-	Mat transformedMatrix(pict.size(), pict.type());
-	warpPerspective(pict, transformedMatrix, transMat, pict.size());
-	return transMat;
 }
 
 bool isMatSorted(Mat & matrix)

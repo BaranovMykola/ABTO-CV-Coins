@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="A4CornersDetection.cpp" />
-    <ClCompile Include="CoinsDetection.cpp" />
     <ClCompile Include="CoinsSource.cpp" />
     <ClCompile Include="ImagePreprocessing.cpp" />
     <ClCompile Include="Line.cpp" />
@@ -29,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="A4CornersDetection.h" />
-    <ClInclude Include="CoinsDetection.h" />
     <ClInclude Include="ImagePreprocessing.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="PaperReconstruction.h" />
