@@ -24,6 +24,7 @@
     <ClCompile Include="CoinsSource.cpp" />
     <ClCompile Include="ImagePreprocessing.cpp" />
     <ClCompile Include="Line.cpp" />
+    <ClCompile Include="PaperReconstruction.cpp" />
     <ClCompile Include="PointsComparation.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +32,7 @@
     <ClInclude Include="CoinsDetection.h" />
     <ClInclude Include="ImagePreprocessing.h" />
     <ClInclude Include="Line.h" />
+    <ClInclude Include="PaperReconstruction.h" />
     <ClInclude Include="PointsComparation.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

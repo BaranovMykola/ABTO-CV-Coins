@@ -15,6 +15,7 @@
 #include "ImagePreprocessing.h"
 #include "A4CornersDetection.h"
 #include "PointsComparation.h"
+#include "PaperReconstruction.h"
 
 using namespace cv;
 
@@ -66,7 +67,7 @@ std::vector<Point> getA4Corners(Mat& input)
 	}
 
 	std::sort(families.begin(), families.end(), [](std::set<Point2f,  PointComparatorX> l, std::set<Point2f,  PointComparatorX> r) { return l.size() > r.size(); });
-	return accumulatePointFamilies(std::vector<std::set<Point2f,  PointComparatorX> >(families.begin(), families.begin() + PointsQuantity));
+	return accumulatePointFamilies(std::vector<std::set<Point2f,  PointComparatorX> >(families.begin(), families.begin() + A4CornersCount));
 }
 
 void changeInput(int, void* img)
