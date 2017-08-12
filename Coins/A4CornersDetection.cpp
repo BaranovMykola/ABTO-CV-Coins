@@ -29,7 +29,7 @@ std::vector<Line> getLines(std::vector<Vec2f> lines)
 	return points;
 }
 
-std::vector<Point2f> findRectangleCorners(std::vector<Line> lines, Size imgSize, int minGradCustom)
+std::vector<Point2f> findRectangleCorners(std::vector<Line> lines, Size imgSize, int minAngle)
 {
 	std::vector<Point2f> points;
 	int count = 0;
@@ -63,7 +63,7 @@ std::vector<Point2f> findRectangleCorners(std::vector<Line> lines, Size imgSize,
 			}
 			float diffAngle = static_cast<int>(abs(i.angle() - j.angle())) % 180;
 			if (x > 0 && y > 0 && x < imgSize.width && y < imgSize.height &&
-				diffAngle > minGradCustom && diffAngle < 180 - minGradCustom)
+				diffAngle > minAngle && diffAngle < 180 - minAngle)
 			{
 				points.push_back(Point2f(x, y));
 			}
@@ -72,7 +72,7 @@ std::vector<Point2f> findRectangleCorners(std::vector<Line> lines, Size imgSize,
 	return points;
 }
 
-std::vector<std::set<Point2f, PointComparatorX> > partitionPoints2Families(std::vector<Point2f> points, int distance)
+std::vector<std::set<Point2f, PointComparatorX> > partitionPoints2Families(std::vector<Point2f> points, int minDistance)
 {
 	std::vector<std::set<Point2f,  PointComparatorX> > families;
 	if (points.size() > 3500) { std::cout << "Point threshold reached" << std::endl;return families; }
@@ -92,15 +92,8 @@ std::vector<std::set<Point2f, PointComparatorX> > partitionPoints2Families(std::
 			for (auto i = families.begin(); i < families.end(); ++i)
 			{
 				double averageDist = std::accumulate(i->begin(), i->end(), 0.0, [&](double sum, Point2f p) { return static_cast<double>(cv::norm(var - p)) + sum; });
-				/*if (norm(*(i->begin()) - var) < distance)
-				{
-				i->insert(var);
-				inserted = true;
-				break;
-				}*/
-				//averageDist+=
 				averageDist /= i->size();
-				if (averageDist < distance)
+				if (averageDist < minDistance)
 				{
 					i->insert(var);
 					inserted = true;
@@ -108,9 +101,9 @@ std::vector<std::set<Point2f, PointComparatorX> > partitionPoints2Families(std::
 			}
 			if (!inserted)
 			{
-				families.push_back(std::set<Point2f,  PointComparatorX>({ var }));
+				families.push_back(std::set<Point2f,  PointComparatorX>({ var })); //creating new family
 			}
 		}
 	}
 	return families;
-}
+} // can be improved
