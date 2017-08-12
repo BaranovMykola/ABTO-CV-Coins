@@ -25,7 +25,7 @@ const int PointsQuantity = 4;
 
 std::vector<cv::Point2f> accumulatePointFamilies( Mat& pict,std::vector<std::set<cv::Point2f, Comp> > families);
 
-Mat& paperToRectangle(Mat& pict, std::vector<cv::Point2f> points);
+Mat paperToRectangle(Mat& pict, std::vector<cv::Point2f> points, Mat& a4Corners);
 
 bool isMatSorted(Mat& arr);
 
@@ -33,4 +33,4 @@ bool isHorizontal(Mat& points, Mat& pict, Mat& transMat);
 
 Mat cutPaper(Mat& data, std::vector<Point2f> points);
 
-Mat& cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point> originalPoints, Mat& transMat);
+Mat cropInterestRegion(Mat& source, Mat& a4Corners, std::vector<Point2f> originalPoints, Mat& transMat, Size procSize);

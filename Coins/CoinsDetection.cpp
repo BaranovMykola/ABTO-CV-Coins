@@ -1,6 +1,7 @@
 #include "CoinsDetection.h"
 #include <iostream>
 #include <numeric>
+#include <iterator>
 
 //void removeValue(std::vector<Point2f> data, std::vector<Point2f>::iterator it)
 //{
@@ -143,20 +144,20 @@ void matrixBackToArray( Mat data, Point2f* res)
 	res[3] = data.at<Point2f>(1, 0);
 }
 
-void calculateOutputPoints(Point2f* input, Point2f* output)
+void calculateOutputPoints(Point2f* input, Point2f* output, double k = 1)
 {
 	//210 x 297
-	int firstPointPlace = 10;
+	int firstPointPlace = 10*k;
 	if (isQuadHor(input))
 	{
 
 		output[0] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
 
-		output[1].x = output[0].x+A4.width;//b - upper right point
+		output[1].x = output[0].x+A4.width*k;//b - upper right point
 		output[1].y = output[0].y;
 
 		output[2].x = output[1].x;//c - down right point
-		output[2].y = output[1].y + A4.height;
+		output[2].y = output[1].y + A4.height*k;
 
 		output[3].x = output[0].x;// down left point
 		output[3].y = output[2].y;
@@ -165,23 +166,24 @@ void calculateOutputPoints(Point2f* input, Point2f* output)
 	{
 		output[1] = Point2f(firstPointPlace, firstPointPlace);//b
 
-		output[2].x = output[1].x + A4.width;
+		output[2].x = output[1].x + A4.width*k;
 		output[2].y = output[1].y;
 
 		output[3].x = output[2].x;
-		output[3].y = output[2].y + A4.height;
+		output[3].y = output[2].y + A4.height*k;
 
 		output[0].x = output[1].x;
 		output[0].y = output[3].y;
 	}
 }
 
-Mat& paperToRectangle(Mat & pict, std::vector<cv::Point2f> points)
+Mat paperToRectangle(Mat & pict, std::vector<cv::Point2f> points, Mat& a4corners)
 {
 	std::vector<Point2f> orderedPoints;
 	Mat showPoints = transformVectorToMatrix(points);
 
 	Mat res = sortMatrix(showPoints);
+	a4corners = res;
 	Point2f inputPoints[4];
 	matrixBackToArray(res, inputPoints);
 		
@@ -312,17 +314,46 @@ Mat cutPaper(Mat & data, std::vector<Point2f> points)// to do!!!!
 	return res;
 }
 
-Mat & cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> originalPoints, Mat & transMat)
+Mat cropInterestRegion(Mat & source, Mat & a4Corners, std::vector<Point2f> originalPoints, Mat & transMat, Size procSize)
 {
 	std::vector<Point2f> outputPoints;
-	for (auto i : originalPoints)
+	Point2f originalDiscretePoints[4];
+
+	a4Corners = sortMatrix(a4Corners);
+	originalDiscretePoints[0] = (Point)a4Corners.at<Point2f>(0, 0);
+	originalDiscretePoints[1] = (Point)a4Corners.at<Point2f>(0, 1);
+	originalDiscretePoints[2] = (Point)a4Corners.at<Point2f>(1, 1);
+	originalDiscretePoints[3] = (Point)a4Corners.at<Point2f>(1, 0);
+
+	Point2f outputlDiscretePoints[4];
+
+
+	float k = source.size().width / procSize.width;
+	int j = 0;
+	for (Point2f& i : originalDiscretePoints)
 	{
-		outputPoints.push_back(transMat*i);
+		i = originalDiscretePoints[j++];
+		i *= k;
+		//circle(source, i, 36, Scalar(255, 0, 0), -1);
+	}
+	
+	calculateOutputPoints(originalDiscretePoints, outputlDiscretePoints, k);
+	
+	for (auto i : outputlDiscretePoints)
+	{
+		//circle(source, i, 36, Scalar(0, 0, 255), -1);
 	}
 
+	Mat newTransMat = getPerspectiveTransform(originalDiscretePoints, outputlDiscretePoints);
+
 	Mat dst;
-	perspectiveTransform(source, dst, transMat);
-	dst = dst(Rect(outputPoints[0], outputPoints[2]));
-	return dst;
+	warpPerspective(source, dst, newTransMat, source.size());
+	auto pt0 = outputlDiscretePoints[0];
+	auto pt1 = outputlDiscretePoints[2];
+	//pt0 *= k;
+	//pt1 *= k;
+	auto r = Rect(pt0, pt1);
+	Mat res = dst(r);
+	return res;
 }
 

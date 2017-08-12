@@ -217,68 +217,64 @@ void changeInput(int, void* img)
 	Mat* imgMat = static_cast<Mat*>(img);
 	*imgMat = imread(path);
 	Mat sourceCopy = imgMat->clone();
-	reduceSize(*imgMat);
+	reduceSize(sourceCopy);
 
-	Mat transMat = paperToRectangle(sourceCopy, getA4Corners(sourceCopy));
+	auto corners = getA4Corners(sourceCopy);
+	Mat a4corners;
+	Mat transMat = paperToRectangle(sourceCopy, corners, a4corners);
 
+	Mat dst = cropInterestRegion(*imgMat, a4corners, corners, transMat, sourceCopy.size());
+	namedWindow("Result", WINDOW_AUTOSIZE);
+	imshow("Result", dst);
 
 }
 
 int main()
 {
-	try
-	{
-		std::string action;
-		std::cin >> action;
-		Mat source;
-		const char* panel = "Preprocessing";
-		/*namedWindow(panel, CV_WINDOW_NORMAL);
-		createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
-		createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
-		createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
-		createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
-		createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
-		createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
-		createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
-		createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
-		createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
+	std::string action;
+	std::cin >> action;
+	Mat source;
+	const char* panel = "Preprocessing";
+	/*namedWindow(panel, CV_WINDOW_NORMAL);
+	createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
+	createTrackbar("B diameter", panel, &bil_d, 50, changeInput, &source);
+	createTrackbar("C low", panel, &canny_low, 900, changeInput, &source);
+	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
+	createTrackbar("H thresh", panel, &hough_thresh, 900, changeInput, &source);
+	createTrackbar("H min grad", panel, &minGrad, 90, changeInput, &source);
+	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
+	createTrackbar("L minGradCust", panel, &minGradCustom, 90, changeInput, &source);
+	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
 */
-		if (action == "all")
+	if (action == "all")
+	{
+		for (size_t i = 0; i < 13; i++)
 		{
-			for (size_t i = 0; i < 13; i++)
+			imgIndex = i;
+			changeInput(0, &source);
+			if (waitKey() == 27)
 			{
-				imgIndex = i;
-				changeInput(0, &source);
-				if (waitKey() == 27)
-				{
-					break;
-				}
-			}
-		}
-		else
-		{
-			while (action != "q")
-			{
-				std::stringstream str;
-				str << action;
-				str >> imgIndex;
-				changeInput(0, &source);
-				
-				waitKey();
-
-				if (waitKey() == 27)
-				{
-					break;
-				}
-
-				std::cout << "enter action: \t";
-				std::cin >> action;
+				break;
 			}
 		}
 	}
-	catch (std::exception exc)
+	else
 	{
-		std::cout << exc.what() << std::endl;
+		while (action != "q")
+		{
+			std::stringstream str;
+			str << action;
+			str >> imgIndex;
+			changeInput(0, &source);
+
+			if (waitKey() == 27)
+			{
+				break;
+			}
+
+			std::cout << "enter action: \t";
+			std::cin >> action;
+		}
 	}
 	return 0;
 }
