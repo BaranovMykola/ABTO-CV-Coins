@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Coins", "Coins\Coins.vcxproj", "{EE7B3952-B91D-456F-B48A-71C5E8A5E9FB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoinsFinding", "CoinsFinding\CoinsFinding.vcxproj", "{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{EE7B3952-B91D-456F-B48A-71C5E8A5E9FB}.Release|x64.Build.0 = Release|x64
 		{EE7B3952-B91D-456F-B48A-71C5E8A5E9FB}.Release|x86.ActiveCfg = Release|Win32
 		{EE7B3952-B91D-456F-B48A-71C5E8A5E9FB}.Release|x86.Build.0 = Release|Win32
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Debug|x64.ActiveCfg = Debug|x64
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Debug|x64.Build.0 = Debug|x64
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Debug|x86.ActiveCfg = Debug|Win32
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Debug|x86.Build.0 = Debug|Win32
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Release|x64.ActiveCfg = Release|x64
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Release|x64.Build.0 = Release|x64
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Release|x86.ActiveCfg = Release|Win32
+		{255E6AA6-EF99-4E85-BC86-150D7C06B6D3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

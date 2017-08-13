@@ -92,7 +92,7 @@ inline Mat paperToRectangle(Mat& pict, Mat& dst, std::vector<cv::Point> points, 
 	Point2f outputPoints[A4CornersCount];
 	
 	matrixBackToArray(pointsMat, inputPoints);
-	calculateOutputPoints(inputPoints, outputPoints, k);
+	calculateOutputPoints(inputPoints, outputPoints, 1);
 	
 	for (size_t i = 0; i < A4CornersCount; i++)
 	{

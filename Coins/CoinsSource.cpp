@@ -97,12 +97,12 @@ void changeInput(int, void* img)
 	std::vector<Point> transfromedPoints;
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 	cropInterestRegion(dst, transfromedPoints);
+	imwrite(a4 + name + "_cropped_" + ext, dst);
 
+	//mainCoinsDetection(dst);
 
-	mainCoinsDetection(dst);
-
-	/*namedWindow("Result", WINDOW_AUTOSIZE);
-	imshow("Result", dst);*/
+	namedWindow("Result", WINDOW_AUTOSIZE);
+	imshow("Result", dst);
 
 }
 
