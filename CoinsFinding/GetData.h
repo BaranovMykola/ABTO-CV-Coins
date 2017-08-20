@@ -42,7 +42,8 @@ Good average values:
 5 13.539 6
 10 9.65167 3
 25 11.9619 10
-50 13.1324 4*/
+50 13.1324 4
+*/
 
 class CoinsData
 {
@@ -93,7 +94,7 @@ public:
 		coins[index].averageRad = curr_rad / coins[index].quantity;		
 	}
 
-	int detect_coin(float rad)
+	int detect_coin_value(float rad)
 	{
 		float min_dist = rad;
 		int coin_to_return = 0;
