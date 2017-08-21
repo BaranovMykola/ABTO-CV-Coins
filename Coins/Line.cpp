@@ -40,7 +40,7 @@ double Line::angle() const
 	return vertical ? 90 : atan(a) * 180 / CV_PI;
 }
 
-double Line::dist(const Line & other) const
+double Line::dst(const Line & other) const
 {
 	if (other.a != a)
 	{

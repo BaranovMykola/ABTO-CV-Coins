@@ -8,7 +8,7 @@ struct Line
 	~Line();
 
 	double angle()const;
-	double dist(const Line& other)const;
+	double dst(const Line& other)const;
 
 	double a;
 	double b;

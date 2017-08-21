@@ -18,6 +18,7 @@ const int minDist = minr * 2;
 const int dp = 1;
 int highThresh = 200;
 int HoughThresh = 7;
+
 CoinsData coins_data;
 
 #pragma region detect_circles
@@ -152,6 +153,22 @@ bool input(Mat& source, string number)
 	return !source.empty();
 }
 
+void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
+{
+	// find pixels that are equal to the local neighborhood not maximum (including 'plateaus')
+	cv::dilate(src, mask, cv::Mat());
+	cv::compare(src, mask, mask, cv::CMP_GE);
+
+	// optionally filter out pixels that are equal to the local minimum ('plateaus')
+	if (remove_plateaus)
+	{
+		cv::Mat non_plateau_mask;
+		cv::erode(src, non_plateau_mask, cv::Mat());
+		cv::compare(src, non_plateau_mask, non_plateau_mask, cv::CMP_GT);
+		cv::bitwise_and(mask, non_plateau_mask, mask);
+	}
+}
+
 void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat source)
 {
 	Mat mask(source.size(), CV_8UC1);
@@ -176,39 +193,44 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 	createTrackbar("cThresh", "Panel", &cTresh, 256);
 	createTrackbar("hTresh", "Panel", &hTresh, 90);
 
-		namedWindow("hough", CV_WINDOW_NORMAL);
+	//namedWindow("hough", CV_WINDOW_NORMAL);
+
 	while (waitKey(30) != 27)
 	{
-		Mat morph;
-		Mat thM;
-		Mat bhM;
-		Mat edges;
-		Mat hitmiss;
-		morphologyEx(mask, morph, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(morphSize + 1, morphSize+1)));
-		imshow("morph", morph);
-		morphologyEx(morph, thM, MORPH_TOPHAT, getStructuringElement(MORPH_ELLIPSE, Size(bh+1,bh+1)));
-		imshow("th", thM);
-		morphologyEx(morph, bhM, MORPH_BLACKHAT, getStructuringElement(MORPH_ELLIPSE, Size(bh + 1, bh + 1)));
-		imshow("bh", bhM);
-		edges = bhM + thM;
-		imshow("edges", edges);
-		vector<Vec3f> hc;
-		HoughCircles(edges, hc, HOUGH_GRADIENT, dp, 15, cTresh, hTresh, 8, 15);
-		Mat drawG;
-		morph.copyTo(drawG);
-		Mat draw = Mat::zeros(morph.size(), CV_8UC3);
-		cvtColor(drawG, draw, CV_GRAY2BGR);
-		for (auto i : hc)
+		Mat dst;
+		imshow("mask", mask);
+		distanceTransform(mask, dst, DIST_L2, cv::DistanceTransformMasks::DIST_MASK_3, CV_32F);
+
+		Mat dstVis;
+		threshold(dst, dst, 8, 0, THRESH_TOZERO);
+		normalize(dst, dstVis, 0, 1, NORM_MINMAX);
+		Mat t = dst;
+		//threshold(dstVis, t, 0.7, 1, THRESH_TOZERO);
+
+		/*Mat dil;
+		dilate(dstVis, dil, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
+		Mat max = dil-dstVis;*/
+
+		Mat mask;
+		non_maxima_suppression(t, mask, true);
+
+		vector<Point> lmax;
+		findNonZero(mask, lmax);
+		//vector<Vec3f> circles;
+		Mat draw = Mat::zeros(dst.size(), CV_8UC3);
+		for (auto i : lmax)
 		{
-			circle(draw, Point(i[0], i[1]), i[2]+1, Scalar(0, 0, 255), 1);
-			circle(draw, Point(i[0], i[1]), 1, Scalar(0, 255, 0), 1);
-			circles.push_back(make_pair(i[2], Point(i[0], i[1])));
+			circles.push_back(make_pair(dst.at<float>(i)+1, i));
+			circle(source, i, circles.back().first, Scalar(0, 0, 255), 1);
 		}
-		imshow("hough", draw);
+		imshow("draw", draw);
+		float eps = FLT_EPSILON;
+		
 	}
 
 	return;
 }
+
 
 
 int main()

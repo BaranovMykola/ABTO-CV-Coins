@@ -123,7 +123,7 @@ int main()
 	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
 	createTrackbar("H thresh", panel, &houghThresh, 900, changeInput, &source);
 	createTrackbar("H min grad", panel, &minGradLines, 90, changeInput, &source);
-	createTrackbar("P dist", panel, &distance, 900, changeInput, &source);
+	createTrackbar("P dst", panel, &distance, 900, changeInput, &source);
 	createTrackbar("L minGradCust", panel, &minGradLinesOverlap, 90, changeInput, &source);
 	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
 	*/
