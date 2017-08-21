@@ -18,6 +18,9 @@ int highThresh = 200;
 int HoughThresh = 7;
 CoinsData coins_data;
 
+#pragma region detect_circles
+
+
 bool can_circle_be_coin(Point2f curr_center, float curr_rad, Mat& mat)
 {
 	int eps = 5;
@@ -89,19 +92,56 @@ vector<pair<float, Point2f>> find_circle_contours(Mat& source)
 	//waitKey();
 	return circles;
 }
+#pragma endregion
 
+# pragma region detect_coin_value
 void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 {
-	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC1);
+	int sum = 0;
+	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC3);
 	for (int i = 0; i < circles.size(); ++i)
 	{
-		cout<<coins_data.detect_coin_value(circles[i].first)<<endl;
-		circle(valuesMat, circles[i].second, circles[i].first, 255, -1);
-		imshow("value", valuesMat);
-		imshow("original", mat);
-		waitKey();
+		Scalar col(255, 0, 0);
+		int value = coins_data.detect_coin_value(circles[i].first);
+		if (value == 10)
+		{
+			cout << "value: " << value << endl;
+			col = Scalar (255, 255, 0);
+			sum += 10;
+		}
+		else
+		{
+			if (value == 25)
+			{
+				cout << "value: " << value << endl;
+				col = Scalar(0, 0, 255);
+				sum += 25;
+			}
+			else
+			{
+				bool silver = is_silver(mat, circles[i].second, circles[i].first);
+				if (silver)
+				{
+					cout << "value: 5" << endl;
+					sum += 5;
+					col = Scalar(0, 255, 0);
+				}
+				else
+				{
+					cout << "value: 50" << endl;
+					sum += 50;
+					col = Scalar(255, 0, 0);
+				}
+			}
+		}
+		circle(valuesMat, circles[i].second, circles[i].first, col, -1);
 	}
+
+	imshow("value", valuesMat);
+	imshow("original", mat);
+	waitKey();
 }
+#pragma endregion 
 
 void input(Mat& source)
 {
@@ -110,8 +150,8 @@ void input(Mat& source)
 	string name;
 	cin >> name;
 	source = imread("../A4/" + name + "_cropped_.jpg");
-	imshow("source", source);
-	waitKey();
+	//imshow("source", source);
+	// waitKey();
 }
 
 int main()
