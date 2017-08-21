@@ -18,6 +18,9 @@
     <ClCompile Include="CoinsFindingSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CoinsSegmentation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
@@ -27,6 +30,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DetectSilverColor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoinsSegmentation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,8 @@
 #include <opencv2\imgproc.hpp>
 #include <iostream>
 #include <vector>
+#include <sstream>
+#include <string>
 #include "GetData.h"
 #include "DetectSilverColor.h"
 
@@ -105,7 +107,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 		int value = coins_data.detect_coin_value(circles[i].first);
 		if (value == 10)
 		{
-			cout << "value: " << value << endl;
+			//cout << "value: " << value << endl;
 			col = Scalar (255, 255, 0);
 			sum += 10;
 		}
@@ -113,7 +115,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 		{
 			if (value == 25)
 			{
-				cout << "value: " << value << endl;
+				//cout << "value: " << value << endl;
 				col = Scalar(0, 0, 255);
 				sum += 25;
 			}
@@ -122,13 +124,13 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 				bool silver = is_silver(mat, circles[i].second, circles[i].first);
 				if (silver)
 				{
-					cout << "value: 5" << endl;
+					//cout << "value: 5" << endl;
 					sum += 5;
 					col = Scalar(0, 255, 0);
 				}
 				else
 				{
-					cout << "value: 50" << endl;
+					//cout << "value: 50" << endl;
 					sum += 50;
 					col = Scalar(255, 0, 0);
 				}
@@ -143,33 +145,96 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 }
 #pragma endregion 
 
-void input(Mat& source)
+bool input(Mat& source, string number)
 {
 	destroyAllWindows();
-	cout << "enter number of picture:" << endl;
-	string name;
-	cin >> name;
-	source = imread("../A4/" + name + "_cropped_.jpg");
-	//imshow("source", source);
-	// waitKey();
+	source = imread("../A4/" + number + "_cropped_.jpg");
+	return !source.empty();
 }
+
+void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat source)
+{
+	Mat mask(source.size(), CV_8UC1);
+
+	prepare_bin_img(source, mask);
+
+	for (auto i : circles)
+	{
+		circle(mask, i.second, i.first, Scalar::all(0), -1);
+	}
+
+	int morphSize = 8;
+	int cTresh = 200;
+	int hTresh = 9;
+	int dp = 1;
+	int bh = 1;
+
+	namedWindow("Panel");
+	createTrackbar("Morph", "Panel", &morphSize, 40);
+	createTrackbar("bh", "Panel", &bh, 40);
+	createTrackbar("dp", "Panel", &dp, 10);
+	createTrackbar("cThresh", "Panel", &cTresh, 256);
+	createTrackbar("hTresh", "Panel", &hTresh, 90);
+
+		namedWindow("hough", CV_WINDOW_NORMAL);
+	while (waitKey(30) != 27)
+	{
+		Mat morph;
+		Mat thM;
+		Mat bhM;
+		Mat edges;
+		Mat hitmiss;
+		morphologyEx(mask, morph, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(morphSize + 1, morphSize+1)));
+		imshow("morph", morph);
+		morphologyEx(morph, thM, MORPH_TOPHAT, getStructuringElement(MORPH_ELLIPSE, Size(bh+1,bh+1)));
+		imshow("th", thM);
+		morphologyEx(morph, bhM, MORPH_BLACKHAT, getStructuringElement(MORPH_ELLIPSE, Size(bh + 1, bh + 1)));
+		imshow("bh", bhM);
+		edges = bhM + thM;
+		imshow("edges", edges);
+		vector<Vec3f> hc;
+		HoughCircles(edges, hc, HOUGH_GRADIENT, dp, 15, cTresh, hTresh, 8, 15);
+		Mat drawG;
+		morph.copyTo(drawG);
+		Mat draw = Mat::zeros(morph.size(), CV_8UC3);
+		cvtColor(drawG, draw, CV_GRAY2BGR);
+		for (auto i : hc)
+		{
+			circle(draw, Point(i[0], i[1]), i[2]+1, Scalar(0, 0, 255), 1);
+			circle(draw, Point(i[0], i[1]), 1, Scalar(0, 255, 0), 1);
+			circles.push_back(make_pair(i[2], Point(i[0], i[1])));
+		}
+		imshow("hough", draw);
+	}
+
+	return;
+}
+
 
 int main()
 {
 	coins_data.readData();
 	Mat source;
-	
-	char ch = 0;
-	do
-	{
-		cout << "to exit enter 'e' to input picture enter 'p'" << endl;
-		cin >> ch;
-		if (ch == 'p')
-		{
-			input(source);
-			find_sum(source, find_circle_contours(source));
-		}
-	} while (ch != 'e');
 
-	system("pause");
+	string ch;
+	while (ch != "e")
+	{
+		destroyAllWindows();
+		cout << ">> ";
+		cin >> ch;
+		if (ch != "e")
+		{
+			if (input(source, ch))
+			{
+				auto circles = find_circle_contours(source);
+				segmentCoins(circles, source);
+				find_sum(source, circles);
+			}
+			else
+			{
+				cout << "Error while loading file [" << ch << "]" << endl;
+			}
+		}
+	}
+	return 0;
 }
