@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -157,6 +157,8 @@
     <ClCompile Include="CoinsFindingSource.cpp" />
     <ClCompile Include="CoinsSegmentation.cpp" />
     <ClCompile Include="PointsComparation.cpp" />
+    <ClCompile Include="DetectCoin.cpp" />
+    <ClCompile Include="GetData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
@@ -164,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="CoinsSegmentation.h" />
     <ClInclude Include="DetectSilverColor.h" />
+    <ClInclude Include="DetectCoin.h" />
     <ClInclude Include="GetData.h" />
     <ClInclude Include="PointsComparation.h" />
   </ItemGroup>

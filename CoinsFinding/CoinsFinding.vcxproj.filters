@@ -1,45 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CoinsFindingSource.cpp">
+    <ClCompile Include="PointsComparation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GetData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectCoin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CoinsSegmentation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PointsComparation.cpp">
+    <ClCompile Include="CoinsFindingSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="AverageValue.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="GetData.h">
+    <ClInclude Include="CoinsSegmentation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DetectSilverColor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CoinsSegmentation.h">
+    <ClInclude Include="DetectCoin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GetData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PointsComparation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="AverageValue.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{89de3d55-6c4c-40b6-b9e9-3763144327d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b432ff4c-673f-4a28-9a4d-2abab675e182}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
