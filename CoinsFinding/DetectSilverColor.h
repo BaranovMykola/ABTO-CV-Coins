@@ -4,7 +4,6 @@
 using namespace std;
 using namespace cv;
 
-bool is_silver(Mat& hist);
 
 
 
@@ -22,6 +21,7 @@ void splitToYuv(Mat& pict)
 	cvtColor(pict, yuvPict, CV_BGR2YUV);
 	split(yuvPict, yuv);
 }
+
 void splitToLab(Mat& pict)
 {
 	vector<Mat> lab;
@@ -31,6 +31,7 @@ void splitToLab(Mat& pict)
 
 
 }
+
 bool coin_hist(Mat& mat, Point center, float radius)
 { 
  	Mat mask =  Mat::zeros(mat.size(), CV_8UC1);
@@ -82,30 +83,3 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius)
 	Scalar mean_val = mean(hls_pict, mask);
 	return (mean_val[0] > 60);
 }
-//bool is_silver(Mat& hist)
-//{
-//	bool res=true;
-//
-//	bool meetNonZero = false;
-//	bool meetZeroSecondTime = false;
-//	for (int i = 0; i < hist.rows; ++i)
-//	{
-//		if (hist.at<float>(i,0) > 5)
-//		{
-//			meetNonZero = true;
-//			if (meetNonZero == true && meetZeroSecondTime == true)
-//			{
-//				res = false;
-//				break;
-//			}
-//		}
-//		else
-//		{
-//			if (meetNonZero == true)
-//			{
-//				meetZeroSecondTime = true;
-//			}
-//		}
-//	}
-//	return res;
-//} 
