@@ -77,10 +77,10 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius)
 {
 	Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
 	circle(mask, center, radius, Scalar(255), -1);
-	Mat hls_pict;
-	cvtColor(orig_pict, hls_pict, CV_BGR2HLS);
-	Scalar mean_val = mean(hls_pict, mask);
-	return (mean_val[0] > 60);
+	Mat lab_pict;
+	cvtColor(orig_pict, lab_pict, CV_BGR2Lab);
+	Scalar mean_val = mean(lab_pict, mask);
+	return (mean_val[2] < 255/2+3);
 }
 //bool is_silver(Mat& hist)
 //{

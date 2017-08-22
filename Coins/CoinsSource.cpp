@@ -20,7 +20,7 @@
 
 using namespace cv;
 
-int distance = 29;
+int distance = 60;
 int minLineDist = 30;
 int minGradLinesOverlap = 10;
 int bilaterialDiam = 30;

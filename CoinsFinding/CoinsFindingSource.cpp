@@ -228,6 +228,11 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 {
 	Mat mask(source.size(), CV_8UC1);
 
+	/*threshold(source, mask, 170, 255, THRESH_BINARY | CV_ADAPTIVE_THRESH_MEAN_C);
+	Mat bm;
+	cvtColor(mask, bm, CV_BGR2GRAY);
+	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY);
+	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY_INV);*/
 	prepare_bin_img(source, mask);
 
 	for (auto i : circles)
@@ -277,10 +282,10 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 		additional.clear();
 		for (auto i : lmax)
 		{
-			additional.push_back(make_pair(dst.at<float>(i)+1, i));
+			additional.push_back(make_pair(dst.at<float>(i), i));
 		}
 
-		auto filtered = mergeNearest(additional, 10, dst);
+		auto filtered = mergeNearest(additional, 16, dst);
 		additional.clear();
 		additional = filtered;
 		
@@ -298,7 +303,40 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 	return;
 }
 
+void showHist(cv::Mat & frame)
+{
+	Mat planes[3];
+	Mat hist[3];
+	split(frame, planes);
+	const int histSize = 256;
+	float range[] = { 0, 256 };
+	const float* histRange = { range };
+	for (size_t i = 0; i < 3; i++)
+	{
+		calcHist(&planes[i], 1, 0, Mat(), hist[i], 1, &histSize, &histRange, range);
+	}
 
+	int hist_w = 1024; int hist_h = 1000;
+	int bin_w = cvRound((double)hist_w / histSize);
+	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+	for (size_t i = 0; i < 3; i++)
+	{
+		normalize(hist[i], hist[i], 0, histImage.rows, NORM_MINMAX, -1, Mat());
+	}
+	for (int i = 1; i < histSize; i++)
+	{
+		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(hist[0].at<float>(i - 1))),
+			 Point(bin_w*(i), hist_h - cvRound(hist[0].at<float>(i))),
+			 Scalar(255, 0, 0), 2, 8, 0);
+		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(hist[1].at<float>(i - 1))),
+			 Point(bin_w*(i), hist_h - cvRound(hist[1].at<float>(i))),
+			 Scalar(0, 255, 0), 2, 8, 0);
+		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(hist[2].at<float>(i - 1))),
+			 Point(bin_w*(i), hist_h - cvRound(hist[2].at<float>(i))),
+			 Scalar(0, 0, 255), 2, 8, 0);
+	}
+	imshow("Histogram", histImage);
+}
 
 int main()
 {
@@ -315,6 +353,24 @@ int main()
 		{
 			if (input(source, ch))
 			{
+
+				Mat gr;
+				cvtColor(source, gr, CV_BGR2GRAY);
+				auto k = getStructuringElement(MORPH_ELLIPSE, Size(15, 15));
+				k.at<uchar>(7, 7) = 0;
+
+				Mat dst = Mat::zeros(source.size(), CV_32FC1);
+				filter2D(gr, dst, dst.depth(), k);
+				dst /= CV_PI*7.5*7.5;
+				normalize(dst, dst, 0, 1, NORM_MINMAX);
+				Mat mask;
+				non_maxima_suppression(dst, mask, true);
+				Mat mask2;
+				dst = 1 - dst;
+				threshold(dst, dst, 0.4, 1, THRESH_TOZERO);
+				non_maxima_suppression(dst, mask2, true);
+				Mat mask3;
+				bitwise_and(mask, mask2, mask3);
 				auto circles = find_circle_contours(source);
 				segmentCoins(circles, source);
 				namedWindow("original", CV_WINDOW_NORMAL);
