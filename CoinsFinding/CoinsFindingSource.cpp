@@ -133,12 +133,14 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 				bool silver = is_silver(mat, circles[i].second, circles[i].first);
 				if (silver)
 				{
+					value = 5;
 					//cout << "value: 5" << endl;
 					sum += 5;
 					col = Scalar(0, 255, 0);
 				}
 				else
 				{
+					value = 50;
 					//cout << "value: 50" << endl;
 					sum += 50;
 					col = Scalar(255, 0, 0);
@@ -147,7 +149,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 		}
 		cv::circle(valuesMat, circles[i].second, circles[i].first, col, -1);
 		cv::circle(mat, circles[i].second, circles[i].first, col, 1);
-		cv::putText(mat, std::to_string(value), circles[i].second-Point2f(value,-value)*0.2, 1, 1, Scalar::all(255), 1);
+		cv::putText(mat, std::to_string(value), circles[i].second-Point2f(circles[i].first,-circles[i].first)*0.5, 1, 1, Scalar::all(255), 1);
 	}
 
 	cv::imshow("value", valuesMat);
@@ -185,7 +187,7 @@ bool isNearest(std::set<Point2f, PointComparatorX> points, Point2f item, int min
 	return all;
 }
 
-std::vector<Point> mergeNearest(circleType circles, int minDist)
+circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 {
 	std::vector<std::set<Point2f, PointComparatorX>> families;
 	for (auto i : circles)
@@ -206,14 +208,17 @@ std::vector<Point> mergeNearest(circleType circles, int minDist)
 		}
 	}
 	
-	std::vector<Point> average;
+	circleType average;
 
 	for (auto i : families)
 	{
 		Point2f sum;
 		sum = std::accumulate(i.begin(), i.end(), Point2f());
 		sum /= (float)i.size();
-		average.push_back(sum);
+		float r;
+		auto rIt = std::max_element(i.begin(), i.end(), [&](Point2f l, Point2f r) { return dst.at<float>(l) < dst.at<float>(r); });
+		r = dst.at<float>(*rIt);
+		average.push_back(make_pair(r+1, sum));
 	}
 	return average;
 }
@@ -275,13 +280,14 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 			additional.push_back(make_pair(dst.at<float>(i)+1, i));
 		}
 
-		auto filtered = mergeNearest(additional, 10);
+		auto filtered = mergeNearest(additional, 10, dst);
 		additional.clear();
+		additional = filtered;
 		
 		for (auto i : filtered)
 		{
-			additional.push_back(make_pair(dst.at<float>(i), i));
-			circle(draw, i, additional.back().first, Scalar(0, 0, 255), 1);
+			//additional.push_back(make_pair(dst.at<float>(i), i));
+			circle(draw, i.second, i.first, Scalar(0, 0, 255), 1);
 		}
 
 		imshow("draw", draw);
@@ -311,6 +317,7 @@ int main()
 			{
 				auto circles = find_circle_contours(source);
 				segmentCoins(circles, source);
+				namedWindow("original", CV_WINDOW_NORMAL);
 				find_sum(source, circles);
 			}
 			else
