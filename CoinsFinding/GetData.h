@@ -1,4 +1,6 @@
 #pragma once
+#ifndef GET_DATA_H
+#define GET_DATA_H
 #include <iostream>
 #include <opencv2\core.hpp>
 #include <string>
@@ -110,3 +112,4 @@ public:
 		return coin_to_return;
 	}
 };
+#endif GET_DATA_H

@@ -155,11 +155,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CoinsFindingSource.cpp" />
+    <ClCompile Include="DetectCoin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DetectCoin.h" />
     <ClInclude Include="DetectSilverColor.h" />
     <ClInclude Include="GetData.h" />
   </ItemGroup>
