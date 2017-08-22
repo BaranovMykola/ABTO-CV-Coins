@@ -36,7 +36,8 @@ int main()
 			outputImg = source.clone();
 			find_sum(source, findCircleContours(source, outputImg), coinsData);
 		}
-	} while (ch != 'e');
+	} 
+	while (ch != 'e');
 
 	system("pause");
 }

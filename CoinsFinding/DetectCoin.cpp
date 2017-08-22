@@ -30,7 +30,7 @@ void printCircles(vector<pair<float, Point2f>>& circles, Mat& mat)//prints circl
 	}
 }
 
-Mat remove_shades(Mat& photo)//test method
+Mat remove_shades(Mat& photo)//method that tries to deal with bad background
 {
 	Mat res(photo.size(), CV_8UC1);
 	Mat grayscale(photo.size(), CV_8UC1);
@@ -125,7 +125,6 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 		int value = coinsData.detect_coin_value(circles[i].first);
 		if (value == 10)
 		{
-			cout << "value: " << value << endl;
 			col = Scalar(255, 255, 0);
 			sum += 10;
 		}
@@ -133,7 +132,6 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 		{
 			if (value == 25)
 			{
-				cout << "value: " << value << endl;
 				col = Scalar(0, 0, 255);
 				sum += 25;
 			}
@@ -142,13 +140,11 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 				bool silver = is_silver(mat, circles[i].second, circles[i].first);
 				if (silver)
 				{
-					cout << "value: 5" << endl;
 					sum += 5;
 					col = Scalar(0, 255, 0);
 				}
 				else
 				{
-					cout << "value: 50" << endl;
 					sum += 50;
 					col = Scalar(255, 0, 0);
 				}

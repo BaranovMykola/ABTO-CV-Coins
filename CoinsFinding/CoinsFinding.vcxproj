@@ -156,13 +156,13 @@
   <ItemGroup>
     <ClCompile Include="CoinsFindingSource.cpp" />
     <ClCompile Include="DetectCoin.cpp" />
+    <ClCompile Include="GetData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DetectCoin.h" />
-    <ClInclude Include="DetectSilverColor.h" />
     <ClInclude Include="GetData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

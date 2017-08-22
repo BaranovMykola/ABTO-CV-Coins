@@ -21,15 +21,15 @@
     <ClCompile Include="DetectCoin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GetData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GetData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DetectSilverColor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DetectCoin.h">

@@ -9,7 +9,6 @@
 using namespace std;
 using namespace cv;
 
-// static Mat outputImg;
 
 void printRadius(vector<pair<float, Point2f>>& circles, Mat& outputImg);
 
