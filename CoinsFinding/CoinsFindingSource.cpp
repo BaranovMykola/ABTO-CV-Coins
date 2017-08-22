@@ -5,8 +5,14 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <set>
+#include <map>
+#include <algorithm>
+#include <numeric>
+
 #include "GetData.h"
 #include "DetectSilverColor.h"
+#include "PointsComparation.h"
 
 using namespace std;
 using namespace cv;
@@ -20,6 +26,8 @@ int highThresh = 200;
 int HoughThresh = 7;
 
 CoinsData coins_data;
+
+typedef std::vector<std::pair<float, cv::Point2f>> circleType;
 
 #pragma region detect_circles
 
@@ -137,12 +145,14 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles)
 				}
 			}
 		}
-		circle(valuesMat, circles[i].second, circles[i].first, col, -1);
+		cv::circle(valuesMat, circles[i].second, circles[i].first, col, -1);
+		cv::circle(mat, circles[i].second, circles[i].first, col, 1);
+		cv::putText(mat, std::to_string(value), circles[i].second-Point2f(value,-value)*0.2, 1, 1, Scalar::all(255), 1);
 	}
 
-	imshow("value", valuesMat);
-	imshow("original", mat);
-	waitKey();
+	cv::imshow("value", valuesMat);
+	cv::imshow("original", mat);
+	cv::waitKey();
 }
 #pragma endregion 
 
@@ -168,6 +178,46 @@ void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove
 		cv::bitwise_and(mask, non_plateau_mask, mask);
 	}
 }
+
+bool isNearest(std::set<Point2f, PointComparatorX> points, Point2f item, int minDist)
+{
+	bool all = std::all_of(points.begin(), points.end(), [&](Point2f i) { return cv::norm(i - item) < minDist; });
+	return all;
+}
+
+std::vector<Point> mergeNearest(circleType circles, int minDist)
+{
+	std::vector<std::set<Point2f, PointComparatorX>> families;
+	for (auto i : circles)
+	{
+		bool inserted = false;
+		for (auto j : families)
+		{
+			if (isNearest(j, i.second, minDist))
+			{
+				j.insert(i.second);
+				inserted = true;
+				break;
+			}
+		}
+		if (!inserted)
+		{
+			families.push_back(std::set<Point2f, PointComparatorX>{i.second});
+		}
+	}
+	
+	std::vector<Point> average;
+
+	for (auto i : families)
+	{
+		Point2f sum;
+		sum = std::accumulate(i.begin(), i.end(), Point2f());
+		sum /= (float)i.size();
+		average.push_back(sum);
+	}
+	return average;
+}
+
 
 void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat source)
 {
@@ -195,10 +245,11 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 
 	//namedWindow("hough", CV_WINDOW_NORMAL);
 
+		circleType additional;
 	while (waitKey(30) != 27)
 	{
 		Mat dst;
-		imshow("mask", mask);
+		imshow("maskLocal", mask);
 		distanceTransform(mask, dst, DIST_L2, cv::DistanceTransformMasks::DIST_MASK_3, CV_32F);
 
 		Mat dstVis;
@@ -211,22 +262,32 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 		dilate(dstVis, dil, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
 		Mat max = dil-dstVis;*/
 
-		Mat mask;
-		non_maxima_suppression(t, mask, true);
+		Mat maskLocal;
+		non_maxima_suppression(t, maskLocal, true);
 
 		vector<Point> lmax;
-		findNonZero(mask, lmax);
+		findNonZero(maskLocal, lmax);
 		//vector<Vec3f> circles;
-		Mat draw = Mat::zeros(dst.size(), CV_8UC3);
+		Mat draw = source.clone();
+		additional.clear();
 		for (auto i : lmax)
 		{
-			circles.push_back(make_pair(dst.at<float>(i)+1, i));
-			circle(source, i, circles.back().first, Scalar(0, 0, 255), 1);
+			additional.push_back(make_pair(dst.at<float>(i)+1, i));
 		}
+
+		auto filtered = mergeNearest(additional, 10);
+		additional.clear();
+		
+		for (auto i : filtered)
+		{
+			additional.push_back(make_pair(dst.at<float>(i), i));
+			circle(draw, i, additional.back().first, Scalar(0, 0, 255), 1);
+		}
+
 		imshow("draw", draw);
-		float eps = FLT_EPSILON;
 		
 	}
+	circles.insert(circles.end(), additional.begin(), additional.end());
 
 	return;
 }

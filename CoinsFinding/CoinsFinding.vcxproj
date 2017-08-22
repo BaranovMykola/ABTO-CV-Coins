@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="CoinsFindingSource.cpp" />
     <ClCompile Include="CoinsSegmentation.cpp" />
+    <ClCompile Include="PointsComparation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
@@ -164,6 +165,7 @@
     <ClInclude Include="CoinsSegmentation.h" />
     <ClInclude Include="DetectSilverColor.h" />
     <ClInclude Include="GetData.h" />
+    <ClInclude Include="PointsComparation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
