@@ -30,6 +30,8 @@ bool input(Mat& source, string number)
 	return !source.empty();
 }
 
+
+
 int main()
 {
 	Mat source;
@@ -49,6 +51,8 @@ int main()
 			if (input(source, ch))
 			{
 				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
+				/*autoContrast(source);
+				truncInv(source);*/
 				Mat segm = source.clone();
 				source = bilaterialBlurCoins(source);
 				outputImg = source.clone();

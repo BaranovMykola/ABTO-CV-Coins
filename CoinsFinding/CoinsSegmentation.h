@@ -22,3 +22,7 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 cv::Mat bilaterialBlurCoins(Mat & source);
 
 void overexposedThresh(Mat & source);
+
+void autoContrast(Mat & source);
+
+Mat truncInv(Mat & source);

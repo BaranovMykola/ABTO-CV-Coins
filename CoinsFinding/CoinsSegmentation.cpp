@@ -65,7 +65,7 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 		float r;
 		auto rIt = std::max_element(i.begin(), i.end(), [&](Point2f l, Point2f r) { return dst.at<float>(l) < dst.at<float>(r); });
 		r = dst.at<float>(*rIt);
-		average.push_back(make_pair(r+1, sum));
+		average.push_back(make_pair(r+2, sum));
 	}
 	return average;
 }
@@ -123,7 +123,10 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 	cvtColor(mask, bm, CV_BGR2GRAY);
 	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY);
 	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY_INV);*/
-	mask = getMask(source);
+	//mask = getMask(source);
+	Mat clone = source.clone();
+	autoContrast(clone);
+	mask = truncInv(clone);
 
 	for (auto i : circles)
 	{
@@ -238,4 +241,69 @@ void overexposedThresh(Mat& source)
 		threshold(diff, diff, thr2, 255, THRESH_BINARY);
 		imshow("t", diff);
 	}
+}
+
+
+void autoContrast(Mat& source)
+{
+	Mat pl[3];
+	split(source, pl);
+	for (int i = 0; i < 3; i++)
+	{
+		double max;
+		minMaxLoc(pl[i], 0, &max, 0, 0);
+		if (max > 200)
+		{
+			pl[i] -= 80;
+			max = 200;
+		}
+		pl[i] *= 255 / max;
+	}
+	merge(pl, 3, source);
+}
+
+Mat truncInv(Mat& source)
+{
+	double max;
+	Scalar av = mean(source);
+	minMaxLoc(source, 0, &max, 0, 0);
+	for (int i = 0; i < source.rows; i++)
+	{
+		uchar* row = source.ptr<uchar>(i);
+		for (int j = 0; j < source.cols; j++)
+		{
+			for (int c = 0; c < source.channels(); c++)
+			{
+				//row[j+c]
+				if (row[j * 3 + c] > av[c] * 2 && i > 0 && j > 0 && i + 2<source.rows && j + 2 < source.cols)
+				{
+					cv::Point point(j, i);
+					Mat onePixelSourceROI = source(cv::Rect(point - Point(1, 1), cv::Size(3, 3)));
+
+					Mat dest;
+					Mat k = Mat::zeros(Size(3, 3), CV_8UC1);
+					cv::filter2D(onePixelSourceROI,
+								 dest,
+								 CV_8UC3,
+								 k,
+								 cv::Point(-1, -1),
+								 0,
+								 cv::BORDER_CONSTANT);
+					dest.copyTo(onePixelSourceROI);
+				}
+			}
+		}
+	}
+	Mat res = source;
+	morphologyEx(source, res, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
+	Mat tre;
+	Mat pl[3];
+	split(res, pl);
+	Mat adt[3];
+	for (int i = 0; i < 3; i++)
+	{
+		adaptiveThreshold(pl[i], adt[i], 255, cv::AdaptiveThresholdTypes::ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV, 155, 0);
+	}
+	tre = adt[0] + adt[1] + adt[2];
+	return tre;
 }
