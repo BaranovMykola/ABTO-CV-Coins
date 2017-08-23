@@ -30,12 +30,21 @@ void printCircles(vector<pair<float, Point2f>>& circles, Mat& mat)//prints circl
 	}
 }
 
+void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& values)
+{
+	for (size_t i = 0; i < values.size(); ++i)
+	{
+		putText(mat, to_string(values[i]), Point(circles[i].second.x- circles[i].first/2, circles[i].second.y + circles[i].first/2), FONT_HERSHEY_COMPLEX_SMALL, 0.8, Scalar(0, 255, 0));
+	}
+}
+
 Mat remove_shades(Mat& photo)//method that tries to deal with bad background
 {
 	Mat res(photo.size(), CV_8UC1);
 	Mat grayscale(photo.size(), CV_8UC1);
 	cvtColor(photo, grayscale, CV_BGR2GRAY);
-	namedWindow("trakbars");
+	Mat background = imread("");
+	/*namedWindow("trakbars");
 	int size = 11;
 	createTrackbar("size", "trakbars", &size, 300);
 	int C = 30;
@@ -46,7 +55,7 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background
 		adaptiveThreshold(grayscale, res, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 2 * size + 1, C);
 		imshow("output", res);
 	}
-
+	*/
 	return res;
 }
 
@@ -119,6 +128,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 {
 	int sum = 0;
 	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC3);
+	vector<int> values;
 	for (int i = 0; i < circles.size(); ++i)
 	{
 		Scalar col(255, 0, 0);
@@ -141,19 +151,23 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 				if (silver)
 				{
 					sum += 5;
+					value = 5;
 					col = Scalar(0, 255, 0);
 				}
 				else
 				{
 					sum += 50;
+					value = 50;
 					col = Scalar(255, 0, 0);
 				}
 			}
 		}
 		circle(valuesMat, circles[i].second, circles[i].first, col, -1);
+		values.push_back(value);
 	}
 
-	imshow("value", valuesMat);
+	printValue(mat, circles, values);
+//	imshow("value", valuesMat);
 	imshow("original", mat);
 	waitKey();
 }

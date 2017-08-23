@@ -16,6 +16,8 @@ void printContours(Mat & tresh, vector<vector<Point>>& contours, Mat& outputImg)
 
 void printCircles(vector<pair<float, Point2f>>& circles, Mat & mat);
 
+void printValue(Mat & mat, vector<pair<float, Point2f>>& circles, vector<int>& values);
+
 Mat remove_shades(Mat & photo);
 
 bool canCircleBeCoin(Point2f curr_center, float curr_rad, Size matSize);
