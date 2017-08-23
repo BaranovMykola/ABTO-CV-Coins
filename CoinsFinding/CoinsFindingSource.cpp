@@ -30,6 +30,32 @@ bool input(Mat& source, string number)
 	return !source.empty();
 }
 
+void detectSilver(Mat& source)
+{
+	source = bilaterialBlurCoins(source);
+	Mat hsl;
+	Mat lab;
+	cvtColor(source, hsl, CV_BGR2HLS);
+	cvtColor(source, lab, CV_BGR2HLS);
+	Mat pl[3];
+	Mat plLab[3];
+	Mat plS[3];
+	split(hsl, pl);
+	split(lab, plLab);
+	split(source, plS);
+	threshold(pl[0], pl[0], 70, 255, THRESH_BINARY);
+	erode(pl[0], pl[0], getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	morphologyEx(pl[0], pl[0], MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+	Mat backg(source.size(), CV_8UC3);
+	backg = mean(source, pl[0]);
+	Mat sourceclone = source.clone();
+	backg.copyTo(sourceclone, pl[0]);
+	Mat diff;
+	absdiff(source, sourceclone, diff);
+	threshold(diff, diff, 40, 255, THRESH_BINARY);
+	morphologyEx(diff, diff, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
+	morphologyEx(diff, diff, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+}
 
 
 int main()
@@ -53,6 +79,7 @@ int main()
 				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
 				/*autoContrast(source);
 				truncInv(source);*/
+				detectSilver(source);
 				Mat segm = source.clone();
 				source = bilaterialBlurCoins(source);
 				outputImg = source.clone();
