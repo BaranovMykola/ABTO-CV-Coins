@@ -2,6 +2,8 @@
 
 #include <opencv2\imgproc.hpp>
 
+#include <numeric>
+
 using namespace cv;
 
 cv::Mat showHist(cv::Mat & frame, int chanel)
@@ -37,4 +39,18 @@ cv::Mat showHist(cv::Mat & frame, int chanel)
 			 Scalar(0, 0, 255), 2, 8, 0);
 	}
 	return hist[chanel];
+}
+
+bool isOverexposed(cv::Mat & frame)
+{
+	Mat lab;
+	cvtColor(frame, lab, CV_BGR2Lab);
+	Mat histL = showHist(lab, 0);
+	float sum = 0;
+	for (int i =histL.rows*0.9; i < histL.rows; i++)
+	{
+		sum += histL.at<float>(Point(0, i));
+	}
+	float thresh = frame.cols*frame.rows*0.001;
+	return sum > thresh;
 }

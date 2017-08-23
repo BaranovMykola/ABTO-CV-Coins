@@ -34,7 +34,9 @@
     <ClInclude Include="PointsComparation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Histogram.h" />
+    <ClInclude Include="Histogram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />

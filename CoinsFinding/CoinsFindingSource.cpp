@@ -16,6 +16,7 @@
 #include "PointsComparation.h"
 #include "CoinsSegmentation.h"
 #include "DetectCoin.h"
+#include "Histogram.h"
 
 typedef std::vector<std::pair<float, cv::Point>> circleType;
 
@@ -28,7 +29,6 @@ bool input(Mat& source, string number)
 	source = imread("../A4/" + number + "_cropped_.jpg");
 	return !source.empty();
 }
-
 
 int main()
 {
@@ -48,6 +48,7 @@ int main()
 		{
 			if (input(source, ch))
 			{
+				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
 				Mat segm = source.clone();
 				source = bilaterialBlurCoins(source);
 				outputImg = source.clone();
