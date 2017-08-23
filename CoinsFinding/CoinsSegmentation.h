@@ -20,3 +20,5 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat & dst);
 void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat source);
 
 cv::Mat bilaterialBlurCoins(Mat & source);
+
+void overexposedThresh(Mat & source);

@@ -163,3 +163,21 @@ cv::Mat bilaterialBlurCoins(Mat& source)
 	}
 	return blured;
 }
+
+void overexposedThresh(Mat& source)
+{
+	int thr = 100;
+	int thr2 = 100;
+	namedWindow("panel");
+	createTrackbar("thr", "panel", &thr, 255);
+	createTrackbar("thr2", "panel", &thr2, 255);
+	while (waitKey(30) != 27)
+	{
+		Mat t;
+		threshold(source, t, thr, 255, THRESH_TRUNC);
+		Mat diff;
+		absdiff(t, source, diff);
+		threshold(diff, diff, thr2, 255, THRESH_BINARY);
+		imshow("t", diff);
+	}
+}
