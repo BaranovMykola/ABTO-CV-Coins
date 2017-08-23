@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="CoinsFindingSource.cpp" />
     <ClCompile Include="CoinsSegmentation.cpp" />
+    <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="PointsComparation.cpp" />
     <ClCompile Include="DetectCoin.cpp" />
     <ClCompile Include="GetData.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="DetectSilverColor.h" />
     <ClInclude Include="DetectCoin.h" />
     <ClInclude Include="GetData.h" />
+    <ClInclude Include="Histogram.h" />
     <ClInclude Include="PointsComparation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -16,6 +16,7 @@
     <ClCompile Include="CoinsFindingSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Histogram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoinsSegmentation.h">
@@ -33,6 +34,7 @@
     <ClInclude Include="PointsComparation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Histogram.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="AverageValue.txt" />
