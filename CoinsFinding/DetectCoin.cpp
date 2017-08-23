@@ -30,7 +30,7 @@ void printCircles(vector<pair<float, Point2f>>& circles, Mat& mat)//prints circl
 	}
 }
 
-void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& values)
+void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& values)//prints value of coins onsource image
 {
 	for (size_t i = 0; i < values.size(); ++i)
 	{
@@ -38,12 +38,93 @@ void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& va
 	}
 }
 
-Mat remove_shades(Mat& photo)//method that tries to deal with bad background
+Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
 {
 	Mat res(photo.size(), CV_8UC1);
-	Mat grayscale(photo.size(), CV_8UC1);
-	cvtColor(photo, grayscale, CV_BGR2GRAY);
-	Mat background = imread("");
+	Mat hsvPict(photo.size(), CV_8UC1);
+	cvtColor(photo, hsvPict, CV_BGR2HSV);
+
+	vector<Mat> photoVec(3);
+	split(hsvPict, photoVec);
+
+	Mat background = imread("../A4/14_cropped_.jpg");
+
+	cvtColor(background, background, CV_BGR2Lab);
+
+	vector<Mat> backgroundPlanes;
+	split(background, backgroundPlanes);
+
+
+
+	vector<Mat> oneChannelDiff(3);
+	absdiff(backgroundPlanes[0], photoVec[0], oneChannelDiff[0]);
+	absdiff(backgroundPlanes[1], photoVec[1], oneChannelDiff[1]);
+	absdiff(backgroundPlanes[2], photoVec[2], oneChannelDiff[2]);
+
+	
+	int size = 300;
+	int C = 0;
+	vector<Mat> adaptivePlanes(3);
+	Mat adaptive(photo.size(), CV_8UC1);
+	
+	
+		for (int i = 0; i < 3; ++i)
+		{
+			adaptiveThreshold(oneChannelDiff[i], adaptivePlanes[i], 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 2 * size + 1, C);
+			//threshold(oneChannelDiff[i], adaptivePlanes[i], 0, 255, THRESH_BINARY | THRESH_OTSU);
+		}
+		//adaptive = adaptivePlanes[0] + adaptivePlanes[1] + adaptivePlanes[2];
+		//merge(adaptivePlanes, adaptive);
+
+//		cvtColor(adaptive, adaptive, CV_HSV2BGR);
+		//adaptive = adaptivePlanes[1] * 0.5 + adaptivePlanes[2] * 0.5;
+
+		threshold(photoVec[2], adaptive, 0, 255, THRESH_BINARY | THRESH_OTSU);
+		Mat adaptive2 =  oneChannelDiff[2].clone();
+	
+		int meanVal = mean(oneChannelDiff[2], adaptive)[0];
+		threshold(adaptive2, adaptive2, 50, 255, THRESH_BINARY);
+
+		res = adaptive + adaptive2;
+		
+		return adaptive;
+}
+	/*vector<Mat> vecBin(3);
+	Mat matBin(photo.size(), CV_8UC1);
+	threshold(oneChannelDiff[0], vecBin[0], 0, 255, THRESH_OTSU | THRESH_BINARY);
+	threshold(oneChannelDiff[1], vecBin[1], 0, 255, THRESH_OTSU | THRESH_BINARY);
+	threshold(oneChannelDiff[2], vecBin[2], 0, 255, THRESH_OTSU | THRESH_BINARY);
+
+	merge(vecBin, matBin);
+
+
+	Mat grayscaleDiffMerged(photo.size(), CV_8UC3);
+	merge(oneChannelDiff, grayscaleDiffMerged);
+
+	Mat reallyGrayscale(photo.size(), CV_8UC1);
+	cvtColor(grayscaleDiffMerged, reallyGrayscale, CV_BGR2GRAY);
+
+	Mat threshedDiffMat(photo.size(), CV_8UC1);
+
+	threshold(reallyGrayscale, threshedDiffMat, 0, 255, THRESH_OTSU | THRESH_BINARY);
+*/
+
+	//cvtColor(background, background, CV_BGR2GRAY);
+	//Mat firstDifference(photo.size(), CV_8UC1);
+	//firstDifference = (grayscale - background);
+
+	//Mat secondDifference(photo.size(), CV_8UC1);
+	//secondDifference = (background - grayscale);
+
+	//Mat binaryFirst(photo.size(), CV_8UC1);
+	//Mat binarySecond(photo.size(), CV_8UC1);
+
+	//threshold(firstDifference, binaryFirst, 0, 255, THRESH_BINARY|THRESH_OTSU);
+	//threshold(secondDifference, binarySecond, 0, 255, THRESH_BINARY|THRESH_OTSU);
+
+	//Mat sumGrayscale = firstDifference + secondDifference;
+	//Mat sumBin = binaryFirst + binarySecond;
+
 	/*namedWindow("trakbars");
 	int size = 11;
 	createTrackbar("size", "trakbars", &size, 300);
@@ -56,8 +137,7 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background
 		imshow("output", res);
 	}
 	*/
-	return res;
-}
+
 
 bool canCircleBeCoin(Point2f curr_center, float curr_rad, Size matSize)// checks whether contours intersect edges of paper
 {
@@ -168,8 +248,8 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 
 	printValue(mat, circles, values);
 //	imshow("value", valuesMat);
-	imshow("original", mat);
-	waitKey();
+	cv::imshow("original", mat);
+	cv::waitKey();
 }
 bool is_silver(Mat& orig_pict, Point2f center, float radius)
 {
