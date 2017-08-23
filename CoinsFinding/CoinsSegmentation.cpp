@@ -15,7 +15,7 @@ using namespace std;
 void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
 {
 	// find pixels that are equal to the local neighborhood not maximum (including 'plateaus')
-	cv::dilate(src, mask, cv::Mat());
+	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(15,15)));
 	cv::compare(src, mask, mask, cv::CMP_GE);
 
 	// optionally filter out pixels that are equal to the local minimum ('plateaus')
@@ -70,6 +70,48 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 	return average;
 }
 
+void customLocalMax(cv::Mat& dist, Mat& mask)
+{
+	Mat k = (Mat_<float>(Size(5, 5)) << -0.5, -0.5, -0.5, -0.5,-0.5,
+			 -0.5, -1, -1, -1, -0.5,
+			 -0.5, -1, 16, -1, -0.5,
+			 -0.5, -1, -1, -1, -0.5,
+			 -0.5, -0.5, -0.5, -0.5, -0.5);
+	mask = Mat::zeros(dist.size(), CV_32F);
+	filter2D(dist, mask, mask.depth(), k);
+}
+
+circleType mergeRemote(circleType& circles, int minDist, cv::Mat& dst)
+{
+	vector<int> votes(circles.size());
+	for (int i = 0; i < circles.size(); i++)
+	{
+		for (int j = 0; j < circles.size(); j++)
+		{
+			float dist = norm(circles[i].second - circles[j].second);
+			if (dist > circles[i].first-minDist && 
+				dist < circles[i].first + minDist
+				|| 
+				dist > circles[j].first - minDist &&
+				dist < circles[j].first + minDist)
+			{
+				votes[i]++;
+				votes[j]++;
+			}
+		}
+	}
+
+	for (int i = 0;i < votes.size();++i)
+	{
+		if (votes[i] >= 4)
+		{
+			circles.erase(circles.begin() + i);
+			votes.erase(votes.begin() + i);
+			i = 0;
+		}
+	}
+	return circleType();
+}
 
 void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat source)
 {
@@ -121,6 +163,8 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 
 		Mat maskLocal;
 		non_maxima_suppression(t, maskLocal, true);
+		Mat customMask;
+		customLocalMax(t, customMask);
 
 		vector<Point> lmax;
 		findNonZero(maskLocal, lmax);
@@ -132,16 +176,29 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 			additional.push_back(make_pair(dst.at<float>(i), i));
 		}
 
-		auto filtered = mergeNearest(additional, 16, dst);
+		auto filtered = mergeNearest(additional, 8, dst);
+		Mat full = draw.clone();
+		for (auto i : additional)
+		{
+			circle(full, i.second, i.first, Scalar(0, 0, 255), 1);
+		}
+
+		Mat fullFiltered = draw.clone();
+		for (auto i : filtered)
+		{
+			circle(fullFiltered, i.second, i.first, Scalar(0, 0, 255), 1);
+		}
+		mergeRemote(filtered, 3, full);
 		additional.clear();
 		additional = filtered;
+		
 
 		for (auto i : filtered)
 		{
 			//additional.push_back(make_pair(dst.at<float>(i), i));
 			circle(draw, i.second, i.first, Scalar(0, 0, 255), 1);
 		}
-
+		namedWindow("draw", CV_WINDOW_NORMAL);
 		imshow("draw", draw);
 
 	}
