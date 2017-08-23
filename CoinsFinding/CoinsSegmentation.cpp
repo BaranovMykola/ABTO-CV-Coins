@@ -15,7 +15,7 @@ using namespace std;
 void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
 {
 	// find pixels that are equal to the local neighborhood not maximum (including 'plateaus')
-	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(15,15)));
+	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
 	cv::compare(src, mask, mask, cv::CMP_GE);
 
 	// optionally filter out pixels that are equal to the local minimum ('plateaus')
@@ -88,12 +88,13 @@ circleType mergeRemote(circleType& circles, int minDist, cv::Mat& dst)
 	{
 		for (int j = 0; j < circles.size(); j++)
 		{
+			float perc = 0.1;
 			float dist = norm(circles[i].second - circles[j].second);
-			if (dist > circles[i].first-minDist && 
-				dist < circles[i].first + minDist
+			if (dist > circles[i].first*(1-perc) && 
+				dist < circles[i].first*(1 + perc)
 				|| 
-				dist > circles[j].first - minDist &&
-				dist < circles[j].first + minDist)
+				dist > circles[j].first*(1 - perc) &&
+				dist < circles[j].first*(1 + perc))
 			{
 				votes[i]++;
 				votes[j]++;
