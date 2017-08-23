@@ -65,7 +65,7 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 		float r;
 		auto rIt = std::max_element(i.begin(), i.end(), [&](Point2f l, Point2f r) { return dst.at<float>(l) < dst.at<float>(r); });
 		r = dst.at<float>(*rIt);
-		average.push_back(make_pair(r + 1, sum));
+		average.push_back(make_pair(r, sum));
 	}
 	return average;
 }
@@ -110,8 +110,8 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 		distanceTransform(mask, dst, DIST_L2, cv::DistanceTransformMasks::DIST_MASK_3, CV_32F);
 
 		Mat dstVis;
-		threshold(dst, dst, 8, 0, THRESH_TOZERO);
 		normalize(dst, dstVis, 0, 1, NORM_MINMAX);
+		threshold(dst, dst, 8, 0, THRESH_TOZERO);
 		Mat t = dst;
 		//threshold(dstVis, t, 0.7, 1, THRESH_TOZERO);
 
@@ -148,4 +148,18 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 	circles.insert(circles.end(), additional.begin(), additional.end());
 
 	return;
+}
+
+cv::Mat bilaterialBlurCoins(Mat& source)
+{
+	Mat b;
+	Mat blured = source.clone();
+	int d = 10;
+	for (int i = 0; i < 3; i++)
+	{
+
+		bilateralFilter(blured, b, d, d * 2, d / 2);
+		blured = b.clone();
+	}
+	return blured;
 }

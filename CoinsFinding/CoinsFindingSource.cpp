@@ -14,7 +14,7 @@
 #include "GetData.h"
 #include "DetectSilverColor.h"
 #include "PointsComparation.h"
-
+#include "CoinsSegmentation.h"
 #include "DetectCoin.h"
 
 typedef std::vector<std::pair<float, cv::Point>> circleType;
@@ -27,19 +27,6 @@ bool input(Mat& source, string number)
 	destroyAllWindows();
 	source = imread("../A4/" + number + "_cropped_.jpg");
 	return !source.empty();
-}
-
-void bBlur(Mat& source)
-{
-	imshow("source", source);
-	Mat b;
-	int d = 30;
-	bilateralFilter(source, b, d, d * 2, d / 2);
-	source = b.clone();
-	namedWindow("b", CV_WINDOW_NORMAL);
-	imshow("b", source);
-	imshow("mask", getMask(source));
-	waitKey();
 }
 
 
@@ -60,9 +47,14 @@ int main()
 		{
 			if (input(source, ch))
 			{
-				bBlur(source);
+				Mat segm = source.clone();
+				source = bilaterialBlurCoins(source);
 				outputImg = source.clone();
-				find_sum(source, findCircleContours(source, outputImg), coinsData);
+				auto circles = findCircleContours(source, outputImg);
+
+				segmentCoins(circles, source);
+
+				find_sum(source, circles, coinsData);
 			}
 		}
 	} 
