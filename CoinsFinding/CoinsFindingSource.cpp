@@ -36,6 +36,7 @@ int main()
 
 	string ch;
 	CoinsData coinsData;
+	coinsData.readData();
 	Mat outputImg;
 
 	while (ch != "e")

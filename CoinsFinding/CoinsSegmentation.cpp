@@ -65,7 +65,7 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 		float r;
 		auto rIt = std::max_element(i.begin(), i.end(), [&](Point2f l, Point2f r) { return dst.at<float>(l) < dst.at<float>(r); });
 		r = dst.at<float>(*rIt);
-		average.push_back(make_pair(r, sum));
+		average.push_back(make_pair(r+1, sum));
 	}
 	return average;
 }
