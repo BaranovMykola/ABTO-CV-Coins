@@ -117,7 +117,7 @@ vector<pair<float, Point2f>> findCircleContours(Mat& source, Mat& outputImg)
 
 	printRadius(circles, outputImg);
 
-	printCircles(circles, source);
+	printCircles(circles, outputImg);
 
 	return circles;
 }
@@ -173,11 +173,30 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 }
 bool is_silver(Mat& orig_pict, Point2f center, float radius)
 {
-	Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
-	circle(mask, center, radius, Scalar(255), -1);
-	Mat hls_pict;
-	cvtColor(orig_pict, hls_pict, CV_BGR2HLS);
-	Scalar mean_val = mean(hls_pict, mask);
-	return (mean_val[0] > 60);
+	bool labB;
+	bool hslB;
+	{
+		Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
+		circle(mask, center, radius, Scalar(255), -1);
+		Mat lab_pict;
+		cvtColor(orig_pict, lab_pict, CV_BGR2Lab);
+		Mat pl[3];
+		split(lab_pict, pl);
+		Scalar mean_val = mean(lab_pict, mask);
+		labB = mean_val[2] < 255 / 2.0;
+	}
+
+	{
+		Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
+		circle(mask, center, radius, Scalar(255), -1);
+		Mat hsl;
+		cvtColor(orig_pict, hsl, CV_BGR2HLS);
+		Mat pl[3];
+		split(hsl, pl);
+		Scalar mean_val = mean(hsl, mask);
+		hslB = mean_val[0] > 70;
+	}
+
+	return hslB || labB;
 }
 #pragma endregion 
