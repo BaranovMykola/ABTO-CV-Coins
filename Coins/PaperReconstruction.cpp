@@ -36,9 +36,9 @@ Mat transformVectorToMatrix(std::vector<Point> points)
 {
 	Mat pointsMat(2, 2, CV_32FC2);
 	int count = 0;
-	for (size_t i = 0; i < pointsMat.rows; i++)
+	for (int i = 0; i < pointsMat.rows; i++)
 	{
-		for (size_t j = 0; j < pointsMat.cols; j++)
+		for (int j = 0; j < pointsMat.cols; j++)
 		{
 			pointsMat.at<Point2f>(i, j) = points[count++];
 		}
@@ -71,9 +71,9 @@ void matrixBackToArray(Mat data, Point2f* res)
 	res[3] = data.at<Point2f>(1, 0);
 }
 
-void calculateOutputPoints(Point2f* input, Point2f* output, double k)
+void calculateOutputPoints(Point2f* input, Point2f* output, float k)
 {
-	int firstPointPlace = 10 * k;
+	float firstPointPlace = 10 * k;
 	short shift = isQuadHor(input) ? 0 : 1;
 
 	output[shift] = Point2f(firstPointPlace, firstPointPlace);//a - upper left point
@@ -91,9 +91,9 @@ void calculateOutputPoints(Point2f* input, Point2f* output, double k)
 bool isMatSorted(Mat & matrix)
 {
 	bool sorted = true;
-	for (size_t i = 0; i < matrix.cols; i++)
+	for (int i = 0; i < matrix.cols; i++)
 	{
-		for (size_t j = 0; j < matrix.rows; j++)
+		for (int j = 0; j < matrix.rows; j++)
 		{
 			float x0;
 			float x1;
@@ -126,13 +126,13 @@ bool isMatSorted(Mat & matrix)
 
 inline cv::Point2f operator*(cv::Mat& M, const cv::Point2f& p)
 {
-	cv::Mat_<double> src(3/*rows*/, 1 /* cols */);
+	cv::Mat_<float> src(3/*rows*/, 1 /* cols */);
 
 	src(0, 0) = p.x;
 	src(1, 0) = p.y;
 	src(2, 0) = 1.0;
 
-	cv::Mat_<double> dst = M*src; //USE MATRIX ALGEBRA 
+	cv::Mat_<float> dst = M*src; //USE MATRIX ALGEBRA 
 	return cv::Point2f(dst(0, 0), dst(1, 0));
 }
 

@@ -131,7 +131,7 @@ int main()
 	std::cin >> action;
 	if (action == "all")
 	{
-		for (size_t i = 0; i < 13; i++)
+		for (int i = 0; i < 13; i++)
 		{
 			imgIndex = i;
 			changeInput(0, &source);

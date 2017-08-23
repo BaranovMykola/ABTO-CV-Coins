@@ -55,7 +55,7 @@ of $output$ points with ration $A4$ constant
 
 @param k Size multiplier
 */
-void calculateOutputPoints(Point2f * input, Point2f * output, double k = 1);
+void calculateOutputPoints(Point2f * input, Point2f * output, float k = 1);
 
 /*@brief
 
