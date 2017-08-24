@@ -44,50 +44,43 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background and
 	Mat hsvPict(photo.size(), CV_8UC1);
 	cvtColor(photo, hsvPict, CV_BGR2HSV);
 
-	vector<Mat> photoVec(3);
-	split(hsvPict, photoVec);
+	
 
+	vector<Mat> hsvVec(3);
+	split(hsvPict, hsvVec);
+
+	
 	Mat background = imread("../A4/14_cropped_.jpg");
 
-	cvtColor(background, background, CV_BGR2Lab);
+	cvtColor(background, background, CV_BGR2HSV);
 
-	vector<Mat> backgroundPlanes;
+	vector<Mat> backgroundPlanes(3);
 	split(background, backgroundPlanes);
 
 
-
 	vector<Mat> oneChannelDiff(3);
-	absdiff(backgroundPlanes[0], photoVec[0], oneChannelDiff[0]);
-	absdiff(backgroundPlanes[1], photoVec[1], oneChannelDiff[1]);
-	absdiff(backgroundPlanes[2], photoVec[2], oneChannelDiff[2]);
+//	absdiff(backgroundPlanes[0], hsvVec[0], oneChannelDiff[0]);
+//	absdiff(backgroundPlanes[0], hsvVec[1], oneChannelDiff[1]);
+	absdiff(backgroundPlanes[0], hsvVec[2], oneChannelDiff[2]);
 
-	
-	int size = 300;
-	int C = 0;
-	vector<Mat> adaptivePlanes(3);
-	Mat adaptive(photo.size(), CV_8UC1);
-	
-	
-		for (int i = 0; i < 3; ++i)
-		{
-			adaptiveThreshold(oneChannelDiff[i], adaptivePlanes[i], 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 2 * size + 1, C);
-			//threshold(oneChannelDiff[i], adaptivePlanes[i], 0, 255, THRESH_BINARY | THRESH_OTSU);
-		}
-		//adaptive = adaptivePlanes[0] + adaptivePlanes[1] + adaptivePlanes[2];
-		//merge(adaptivePlanes, adaptive);
+//	Mat tryGetSilverCoins;
+//	absdiff(oneChannelDiff[2], backgroundPlanes[2], tryGetSilverCoins);
+	//tryGetSilverCoins = oneChannelDiff[2] - backgroundPlanes[2];
 
-//		cvtColor(adaptive, adaptive, CV_HSV2BGR);
-		//adaptive = adaptivePlanes[1] * 0.5 + adaptivePlanes[2] * 0.5;
+//		Mat firstMask;
+//		threshold(hsvVec[0], firstMask, 0, 255, THRESH_BINARY | THRESH_OTSU);
 
-		threshold(photoVec[2], adaptive, 0, 255, THRESH_BINARY | THRESH_OTSU);
-		Mat adaptive2 =  oneChannelDiff[2].clone();
-	
-		int meanVal = mean(oneChannelDiff[2], adaptive)[0];
-		threshold(adaptive2, adaptive2, 50, 255, THRESH_BINARY);
+		Mat thirdMask = oneChannelDiff[2].clone();
+		double max;
+		minMaxLoc(oneChannelDiff[2], 0, &max);
+		oneChannelDiff[2] *= (255 / (max));
+		threshold(oneChannelDiff[2], oneChannelDiff[2], 0, 255, THRESH_BINARY|THRESH_OTSU);
 
-		res = adaptive + adaptive2;
+
+
+	//	bitwise_and(firstMask, thirdMask, res);
 		
-		return adaptive;
+		return oneChannelDiff[2];
 }
 	/*vector<Mat> vecBin(3);
 	Mat matBin(photo.size(), CV_8UC1);

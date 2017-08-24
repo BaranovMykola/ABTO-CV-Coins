@@ -34,10 +34,9 @@ int main()
 		{
 			input(source);
 			outputImg = source.clone();
-			//find_sum(source, findCircleContours(source, outputImg), coinsData);
-			Mat oldPict = getMask(source);
-			Mat newPict = remove_shades(source);
-			Mat res = oldPict + newPict;
+			find_sum(source, findCircleContours(source, outputImg), coinsData);
+			imshow("", outputImg);
+			waitKey();
 
 		}
 	} 
