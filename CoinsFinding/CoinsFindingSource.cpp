@@ -34,9 +34,10 @@ int main()
 		{
 			input(source);
 			outputImg = source.clone();
-			find_sum(source, findCircleContours(source, outputImg), coinsData);
+			remove_shades(source);
+			/*find_sum(source, findCircleContours(source, outputImg), coinsData);
 			imshow("", outputImg);
-			waitKey();
+			waitKey();*/
 
 		}
 	} 

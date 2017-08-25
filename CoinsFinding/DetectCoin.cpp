@@ -6,6 +6,8 @@
 using namespace std;
 using namespace cv;
 
+Mat RS(Mat& photo);
+
 void printRadius(vector<pair<float, Point2f>>& circles, Mat& outputImg)//prints circles and radius value on binary image
 {
 	for (size_t i = 0; i < circles.size(); i++)
@@ -38,18 +40,130 @@ void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& va
 	}
 }
 
+Mat getMask1(Mat& photo)
+{
+	return Mat();
+}
 Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
+{ 
+	Mat filteredImg(photo.size(), photo.type());
+
+	Mat res(photo.size(), CV_8UC1);
+	bilateralFilter(photo, filteredImg, 8, 140, 140);
+
+	
+	Mat background = imread("../A4/14_cropped_.jpg");// get background
+
+	cvtColor(background, background, CV_BGR2HSV);// converts background to hsv
+
+	Mat grayscale;
+	cvtColor(filteredImg, grayscale, CV_BGR2GRAY);
+
+	vector<Mat> backgroundPlanes(3);
+	split(background, backgroundPlanes);//splits background to hsv planes
+
+	vector<Mat> originalPlanes(3);
+	split(filteredImg, originalPlanes);
+//	Mat mask = filteredImg - backgroundPlanes[0];
+	vector<Mat> oneChannelDiff(3);//difference vector between background and picture 
+
+	for (int i = 0; i < 3; ++i)
+	{
+		absdiff(backgroundPlanes[i], originalPlanes[i], oneChannelDiff[i]);
+	}
+
+	bitwise_not(oneChannelDiff[2], oneChannelDiff[2]);
+	Mat colGrayscale;
+	merge(oneChannelDiff, colGrayscale);
+
+	cvtColor(colGrayscale, grayscale, CV_BGR2GRAY);
+	vector<Mat> sharpenChannels(3);
+
+	
+	
+	Mat grayB(photo.size(), CV_8UC1);
+	Mat grayG;
+	int blockSize = 1;
+	int C = 1;
+
+	namedWindow("n");
+	createTrackbar("SIZE", "n", &blockSize, 500);
+	createTrackbar("C", "n", &C, 100);
+	//threshold(originalPlanes[0], grayB, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	//threshold(originalPlanes[1], grayG, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	Mat otsuthreshold(photo.size(), grayscale.type());
+	while (waitKey(100) != 27)
+	{
+		adaptiveThreshold(grayscale, grayB, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, blockSize*2+1, C);
+		morphologyEx(grayB, grayB, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+		threshold(grayscale, otsuthreshold, 0, 255, THRESH_BINARY | THRESH_OTSU);
+		imshow("orig", originalPlanes[0]);
+		imshow("threshold", grayB);
+		imshow("otsu", otsuthreshold);
+	}
+	/*namedWindow("window");
+	int tr1 = 1;
+	int tr2 = 10;
+	createTrackbar("tr1", "window", &tr1, 500);
+	createTrackbar("tr2", "window", &tr2, 500);
+	Mat cannied(photo.size(), CV_8UC1);
+	while (waitKey(100) != 27)
+	{
+
+	Canny(oneChannelDiff[2], cannied, tr1, tr2, 7);
+	imshow("win", grayB);
+	imshow("w", cannied);
+	}*/
+
+	Mat hsvPict(photo.size(), CV_8UC1);
+
+	
+
+	vector<Mat> hsvVec(3);// splits hsv to three channels
+	split(hsvPict, hsvVec);
+	Mat binary(photo.size(), CV_8UC1);
+	bitwise_and(grayB, grayG, binary);
+	Mat goldCoinsMask;
+
+	threshold(originalPlanes[0], goldCoinsMask, 0, 255, THRESH_BINARY | THRESH_OTSU);
+
+
+	bitwise_not(goldCoinsMask, goldCoinsMask);
+	double meanVal = mean(grayscale, goldCoinsMask)[0];
+
+	Mat pictWithoutGoldCoins; 
+
+	grayscale.copyTo(pictWithoutGoldCoins, goldCoinsMask);
+	
+	Mat averageValMat(filteredImg.size(), CV_8UC1);
+	averageValMat = meanVal;
+	bitwise_not(goldCoinsMask, goldCoinsMask);
+
+	//dilate(goldCoinsMask, goldCoinsMask, Mat());
+	Mat IHopeRes;
+	absdiff(oneChannelDiff[0], oneChannelDiff[2], IHopeRes);
+
+	threshold(IHopeRes, IHopeRes, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	averageValMat.copyTo(grayscale, goldCoinsMask);
+	bitwise_not(IHopeRes, IHopeRes);
+
+	bitwise_or(IHopeRes, goldCoinsMask, res);
+	//threshold(grayscale, grayscale, 0, 255, THRESH_BINARY | THRESH_OTSU);
+		return res;
+}
+
+Mat RS(Mat& photo)//method that tries to deal with bad background and divide foreground from background
 {
 	Mat res(photo.size(), CV_8UC1);
 	Mat hsvPict(photo.size(), CV_8UC1);
 	cvtColor(photo, hsvPict, CV_BGR2HSV);
 
-	
+
 
 	vector<Mat> hsvVec(3);
 	split(hsvPict, hsvVec);
 
-	
+
 	Mat background = imread("../A4/14_cropped_.jpg");
 
 	cvtColor(background, background, CV_BGR2HSV);
@@ -59,29 +173,30 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background and
 
 
 	vector<Mat> oneChannelDiff(3);
-//	absdiff(backgroundPlanes[0], hsvVec[0], oneChannelDiff[0]);
-//	absdiff(backgroundPlanes[0], hsvVec[1], oneChannelDiff[1]);
+	//	absdiff(backgroundPlanes[0], hsvVec[0], oneChannelDiff[0]);
+	//	absdiff(backgroundPlanes[0], hsvVec[1], oneChannelDiff[1]);
 	absdiff(backgroundPlanes[0], hsvVec[2], oneChannelDiff[2]);
 
-//	Mat tryGetSilverCoins;
-//	absdiff(oneChannelDiff[2], backgroundPlanes[2], tryGetSilverCoins);
+	//	Mat tryGetSilverCoins;
+	//	absdiff(oneChannelDiff[2], backgroundPlanes[2], tryGetSilverCoins);
 	//tryGetSilverCoins = oneChannelDiff[2] - backgroundPlanes[2];
 
-//		Mat firstMask;
-//		threshold(hsvVec[0], firstMask, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	//		Mat firstMask;
+	//		threshold(hsvVec[0], firstMask, 0, 255, THRESH_BINARY | THRESH_OTSU);
 
-		Mat thirdMask = oneChannelDiff[2].clone();
-		double max;
-		minMaxLoc(oneChannelDiff[2], 0, &max);
-		oneChannelDiff[2] *= (255 / (max));
-		threshold(oneChannelDiff[2], oneChannelDiff[2], 0, 255, THRESH_BINARY|THRESH_OTSU);
+	Mat thirdMask = oneChannelDiff[2].clone();
+	double max;
+	minMaxLoc(oneChannelDiff[2], 0, &max);
+	oneChannelDiff[2] *= (255 / (max));
+	threshold(oneChannelDiff[2], oneChannelDiff[2], 0, 255, THRESH_BINARY | THRESH_OTSU);
 
 
 
 	//	bitwise_and(firstMask, thirdMask, res);
-		
-		return oneChannelDiff[2];
+
+	return oneChannelDiff[2];
 }
+
 	/*vector<Mat> vecBin(3);
 	Mat matBin(photo.size(), CV_8UC1);
 	threshold(oneChannelDiff[0], vecBin[0], 0, 255, THRESH_OTSU | THRESH_BINARY);
