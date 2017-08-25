@@ -40,24 +40,85 @@ void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& va
 	}
 }
 
+
+
 Mat getMask1(Mat& photo)
 {
-	return Mat();
-}
-Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
-{ 
+
 	Mat filteredImg(photo.size(), photo.type());
 
 	Mat res(photo.size(), CV_8UC1);
 	bilateralFilter(photo, filteredImg, 8, 140, 140);
 
-	
+
 	Mat background = imread("../A4/14_cropped_.jpg");// get background
 
 	cvtColor(background, background, CV_BGR2HSV);// converts background to hsv
 
 	Mat grayscale;
 	cvtColor(filteredImg, grayscale, CV_BGR2GRAY);
+
+	vector<Mat> backgroundPlanes(3);
+	split(background, backgroundPlanes);//splits background to hsv planes
+
+	vector<Mat> originalPlanes(3);
+	split(filteredImg, originalPlanes);
+	//	Mat mask = filteredImg - backgroundPlanes[0];
+	vector<Mat> oneChannelDiff(3);//difference vector between background and picture 
+
+	for (int i = 0; i < 3; ++i)
+	{
+		absdiff(backgroundPlanes[i], originalPlanes[i], oneChannelDiff[i]);
+	}
+
+	bitwise_not(oneChannelDiff[2], oneChannelDiff[2]);
+	Mat colGrayscale;
+	merge(oneChannelDiff, colGrayscale);
+
+	cvtColor(colGrayscale, grayscale, CV_BGR2GRAY);
+
+
+	Mat bin(photo.size(), CV_8UC1);
+	int blockSize = 1;
+	int C = 1;
+
+	namedWindow("n");
+	createTrackbar("SIZE", "n", &blockSize, 500);
+	createTrackbar("C", "n", &C, 100);
+	//threshold(originalPlanes[0], grayB, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	//threshold(originalPlanes[1], grayG, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	Mat otsuthreshold(photo.size(), grayscale.type());
+	while (waitKey(100) != 27)
+	{
+		adaptiveThreshold(grayscale, bin, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, blockSize * 2 + 1, C);
+		morphologyEx(bin, bin, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+		threshold(grayscale, otsuthreshold, 0, 255, THRESH_BINARY | THRESH_OTSU);
+		imshow("orig", originalPlanes[0]);
+		imshow("threshold", bin);
+		imshow("otsu", otsuthreshold);
+	}
+	return grayscale;
+}
+Mat getMask2(Mat& photo)
+{
+	return Mat();
+}
+Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
+{ 
+	Mat res(photo.size(), CV_8UC1);
+	Mat hsvPhoto;
+	Mat filteredImg(photo.size(), photo.type());
+	cvtColor(photo, hsvPhoto, CV_BGR2HSV);
+	bilateralFilter(hsvPhoto, filteredImg, 8, 140, 140);
+
+	
+	Mat background = imread("../A4/14_cropped_.jpg");// get background
+	Mat hsvBackground;
+	cvtColor(background, background, CV_BGR2HSV);// converts background to hsv
+	bilateralFilter(background, hsvBackground, 4, 100, 100);
+
+	Mat grayscale;
+	
 
 	vector<Mat> backgroundPlanes(3);
 	split(background, backgroundPlanes);//splits background to hsv planes
@@ -76,21 +137,41 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background and
 	Mat colGrayscale;
 	merge(oneChannelDiff, colGrayscale);
 
+	Mat gold;
+	absdiff(originalPlanes[2], oneChannelDiff[0], gold);
 	cvtColor(colGrayscale, grayscale, CV_BGR2GRAY);
+
+	threshold(gold, gold, 0, 255, THRESH_BINARY | THRESH_OTSU);
 	vector<Mat> sharpenChannels(3);
 
+	Mat silver;
+
+	absdiff(originalPlanes[2], gold, silver);
+
+	absdiff(silver, backgroundPlanes[0], silver);
+
+
+	Mat empSilver;
+	absdiff(silver, gold, empSilver);
+
+	bitwise_not(empSilver, empSilver);
 	
-	
+	Mat all(photo.size(), CV_8UC1);
+	all = 255;
+
+	empSilver.copyTo(all, gold);
+
+	bitwise_and(gold, all, all);
+
+
+	threshold(all, all, 0, 255, THRESH_BINARY | THRESH_OTSU);
 	Mat grayB(photo.size(), CV_8UC1);
-	Mat grayG;
 	int blockSize = 1;
 	int C = 1;
 
 	namedWindow("n");
 	createTrackbar("SIZE", "n", &blockSize, 500);
 	createTrackbar("C", "n", &C, 100);
-	//threshold(originalPlanes[0], grayB, 0, 255, THRESH_BINARY | THRESH_OTSU);
-	//threshold(originalPlanes[1], grayG, 0, 255, THRESH_BINARY | THRESH_OTSU);
 	Mat otsuthreshold(photo.size(), grayscale.type());
 	while (waitKey(100) != 27)
 	{
@@ -122,7 +203,6 @@ Mat remove_shades(Mat& photo)//method that tries to deal with bad background and
 	vector<Mat> hsvVec(3);// splits hsv to three channels
 	split(hsvPict, hsvVec);
 	Mat binary(photo.size(), CV_8UC1);
-	bitwise_and(grayB, grayG, binary);
 	Mat goldCoinsMask;
 
 	threshold(originalPlanes[0], goldCoinsMask, 0, 255, THRESH_BINARY | THRESH_OTSU);
