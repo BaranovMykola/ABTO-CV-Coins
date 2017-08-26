@@ -103,3 +103,5 @@ inline Mat paperToRectangle(Mat& pict, Mat& dst, std::vector<cv::Point> points, 
 	warpPerspective(pict, dst, transMat, pict.size());
 	return transMat;
 }
+
+void circleProjection(std::vector<cv::Vec3i> circles, Mat& dst, std::vector<Point> sourceCorners, std::vector<Point> transformedCorners);

@@ -141,3 +141,35 @@ void cropInterestRegion(Mat & source, std::vector<Point> pointsRect)
 	auto region = Rect(pointsRect[0], pointsRect[2]);
 	source = source(region);
 }
+
+void circleProjection(std::vector<cv::Vec3i> circles, Mat & src, std::vector<Point> sourceCorners, std::vector<Point> transformedCorners)
+{
+	Mat draw = Mat::zeros(src.size(), CV_8UC3);
+
+	for (auto i : circles)
+	{
+		circle(draw, Point(i[0], i[1]), i[2], Scalar(0, 0, 255), -1);
+	}
+
+	Point2f transP2f[4];
+	Point2f sourceP2f[4];
+
+	Mat sc = transformVectorToMatrix(sourceCorners);
+	sortMatrix(sc);
+	matrixBackToArray(sc, sourceP2f);
+
+	/*Mat tc = transformVectorToMatrix(transformedCorners);
+	matrixBackToArray(tc, transP2f);*/
+
+	transP2f[0] = transformedCorners[0];
+	transP2f[1] = transformedCorners[1];
+	transP2f[2] = transformedCorners[2];
+	transP2f[3] = transformedCorners[3];
+
+	Mat transMat = getPerspectiveTransform(sourceP2f, transP2f);
+
+	Mat drawT;
+
+	warpPerspective(draw, drawT, transMat, draw.size(), WARP_INVERSE_MAP);
+	src += drawT;
+}
