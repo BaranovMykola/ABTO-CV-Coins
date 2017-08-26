@@ -33,12 +33,12 @@ int main()
 		if (ch == 'p')
 		{
 			input(source);
-			outputImg = source.clone();
-			remove_shades(source);
-			/*find_sum(source, findCircleContours(source, outputImg), coinsData);
-			imshow("", outputImg);
-			waitKey();*/
-
+			Mat res = remove_shades(source);
+			/*Mat res = getMask(source);
+			Mat res1 = getMask1(source);
+			Mat res2 = getMask2(source);
+			Mat res3 = getMask3(source);*/
+			Mat bestRes;
 		}
 	} 
 	while (ch != 'e');

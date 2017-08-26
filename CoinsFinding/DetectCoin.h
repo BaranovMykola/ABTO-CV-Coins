@@ -20,6 +20,10 @@ void printValue(Mat & mat, vector<pair<float, Point2f>>& circles, vector<int>& v
 
 Mat getMask1(Mat & photo);
 
+Mat getMask2(Mat & photo);
+
+Mat getMask3(Mat& photo);
+
 Mat remove_shades(Mat & photo);
 
 bool canCircleBeCoin(Point2f curr_center, float curr_rad, Size matSize);
