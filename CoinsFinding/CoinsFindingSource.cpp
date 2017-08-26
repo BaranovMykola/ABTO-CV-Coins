@@ -52,9 +52,31 @@ void detectSilver(Mat& source)
 	backg.copyTo(sourceclone, pl[0]);
 	Mat diff;
 	absdiff(source, sourceclone, diff);
-	threshold(diff, diff, 40, 255, THRESH_BINARY);
-	morphologyEx(diff, diff, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
-	morphologyEx(diff, diff, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+	Mat dpl[3];
+	split(diff, dpl);
+	Mat mix = dpl[0];
+	mix += dpl[1];
+	mix += dpl[2];
+	//mix = bilaterialBlurCoins(mix);
+
+	namedWindow("Panel");
+	int b = 0;
+	int c = 0;
+	int m = 0;
+	createTrackbar("b", "Panel", &b, 150);
+	createTrackbar("c", "Panel", &c, 150);
+	createTrackbar("m", "Panel", &m, 150);
+
+	while (true)
+	{
+		Mat t = Mat::zeros(mix.size(), CV_8UC1);
+		threshold(mix, t, b, 255, THRESH_BINARY);
+		imshow("t", t);
+		waitKey(1);
+	}
+	//threshold(diff, diff, 40, 255, THRESH_BINARY);
+	/*morphologyEx(diff, diff, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
+	morphologyEx(diff, diff, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));*/
 }
 
 
