@@ -96,6 +96,47 @@ void changeInput(int, void* img)
 	Mat dst;
 	std::vector<Point> transfromedPoints;
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
+
+	Mat draw = Mat::zeros(dst.size(), CV_8UC3);
+	circle(dst, Point(100, 100), 40, Scalar(0, 0, 255), -1);
+
+	Point2f transP2f[4];
+	transP2f[0] = transfromedPoints[0];
+	transP2f[1] = transfromedPoints[1];
+	transP2f[2] = transfromedPoints[2];
+	transP2f[3] = transfromedPoints[3];
+
+	Point2f sourceP2f[4];
+	sourceP2f[0] = sourceCorners[0];
+	sourceP2f[1] = sourceCorners[2];
+	sourceP2f[2] = sourceCorners[3];
+	sourceP2f[3] = sourceCorners[1];
+	for (size_t i = 0; i < 4; i++)
+	{
+		circle(dst, transP2f[i], 10, Scalar(0, 0, 255), -1);
+		circle(dst, sourceP2f[i], 150, Scalar(0, 255, 0), -1);
+	}
+
+	Mat sc = transformVectorToMatrix(sourceCorners);
+	sortMatrix(sc);
+	matrixBackToArray(sc, sourceP2f);
+
+	Mat transMat = getPerspectiveTransform(sourceP2f, transP2f);
+
+	Mat drawT;
+
+	vector<Point2f> s;
+	vector<Point2f> t;
+
+	std::transform(sourceCorners.begin(), sourceCorners.end(), back_inserter(s), [](Point p) { return p; });
+	std::transform(transfromedPoints.begin(), transfromedPoints.end(), back_inserter(t), [](Point p) { return p; });
+	warpPerspective(dst, drawT, transMat,draw.size(), WARP_INVERSE_MAP);
+	namedWindow("drawT", CV_WINDOW_NORMAL);
+	imshow("drawT", drawT);
+	Mat ms(s);
+	Mat mt(t);
+	//warpPerspective(ms,mt,drawT, Size(1, 4), WARP_INVERSE_MAP);
+
 	cropInterestRegion(dst, transfromedPoints);
 	imwrite(a4 + name + "_cropped_" + ext, dst);
 
@@ -106,11 +147,7 @@ void changeInput(int, void* img)
 
 }
 
-template <typename T, typename Alloc, template <typename, typename> class V>
-void print_container(std::insert_iterator<V<T, Alloc>> &con)
-{
-	
-}
+
 
 int main()
 {
