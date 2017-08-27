@@ -40,7 +40,7 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 	for (auto i : circles)
 	{
 		bool inserted = false;
-		for (auto j : families)
+		for (auto& j : families)
 		{
 			if (isNearest(j, i.second, minDist))
 			{
