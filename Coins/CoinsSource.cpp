@@ -155,9 +155,10 @@ void inputImg(string name, void* img, std::vector<Point>& transfromedPoints, std
 
 	cout << "total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
 
-	circleProjection(circles, sourceCopy, transfromedPoints, corners);
+	auto p = imread("../A4/62.jpg");
+	circleProjection(circles, p, sourceCorners, transfromedPoints);
 	namedWindow("segm", CV_WINDOW_NORMAL);
-	imshow("segm", sourceCopy);
+	imshow("segm", p);
 
 	namedWindow("Result", WINDOW_AUTOSIZE);
 	imshow("Result", dst);
