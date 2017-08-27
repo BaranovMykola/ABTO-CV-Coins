@@ -40,6 +40,25 @@ void printValue(Mat& mat, vector<pair<float, Point2f>>& circles, vector<int>& va
 
 
 
+Mat goldContours(Mat& photo)
+{
+	Mat res(photo.size(), CV_8UC1);
+	Mat hsv;
+	vector<Mat> hsvPlanes(3);
+	cvtColor(photo, hsv, CV_BGR2HSV);
+	Mat hsvFiltered;
+	bilateralFilter(hsv, hsvFiltered, 8, 100, 100);
+	split(hsv, hsvPlanes);
+
+	Scalar lower(10, 30, 60);
+	Scalar upper(50, 130, 165);
+
+	inRange(hsv, lower, upper, res);
+	Scalar meanVal;
+	meanVal = mean(hsv);
+	
+	return res;
+}
 Mat getMask1(Mat& photo)
 {
 
@@ -119,12 +138,14 @@ Mat getMask2(Mat& photo)
 
 	for (int i = 0; i < 3; ++i)
 	{
-		absdiff(backgroundPlanes[i], originalPlanes[i], oneChannelDiff[i]);
+		absdiff(backgroundPlanes[0], originalPlanes[i], oneChannelDiff[i]);
 	}
 
 	Mat zeroAndTwoChannelsDiff;
 	absdiff(oneChannelDiff[0], oneChannelDiff[2], zeroAndTwoChannelsDiff);
-	threshold(zeroAndTwoChannelsDiff, zeroAndTwoChannelsDiff, 0, 255, THRESH_BINARY | THRESH_OTSU);
+	threshold(originalPlanes[0], originalPlanes[0], 50, 255, THRESH_TRUNC );
+
+
 	bitwise_not(oneChannelDiff[2], oneChannelDiff[2]);
 	Mat colGrayscale;
 	merge(oneChannelDiff, colGrayscale);

@@ -36,11 +36,7 @@ int main()
 			
 			//Mat res = remove_shades(source);
 
-			Mat r = getMask(source);
-			Mat r1 = getMask1(source);
-			Mat r2 = getMask2(source);
-			Mat r3 = getMask3(source);
-			Mat bestRes;
+			goldContours(source);
 		}
 	} 
 	while (ch != 'e');

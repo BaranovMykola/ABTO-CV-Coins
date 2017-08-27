@@ -18,6 +18,8 @@ void printCircles(vector<pair<float, Point2f>>& circles, Mat & mat);
 
 void printValue(Mat & mat, vector<pair<float, Point2f>>& circles, vector<int>& values);
 
+Mat goldContours(Mat & photo);
+
 Mat getMask1(Mat & photo);
 
 Mat getMask2(Mat & photo);
