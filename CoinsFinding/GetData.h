@@ -43,6 +43,6 @@ public:
 
 	void addCoin(int coin, float radius);
 	
-	int detect_coin_value(float rad);
+	int detect_coin_value(float rad, bool silver);
 };
 #endif GET_DATA_H

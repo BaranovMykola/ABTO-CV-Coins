@@ -127,47 +127,18 @@ vector<pair<float, Point2f>> findCircleContours(Mat& source, Mat& outputImg)
 void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData)
 {
 	int sum = 0;
-	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC3);
 	vector<int> values;
 	for (int i = 0; i < circles.size(); ++i)
 	{
-		Scalar col(255, 0, 0);
-		int value = coinsData.detect_coin_value(circles[i].first);
-		if (value == 10)
-		{
-			col = Scalar(255, 255, 0);
-			sum += 10;
-		}
-		else
-		{
-			if (value == 25)
-			{
-				col = Scalar(0, 0, 255);
-				sum += 25;
-			}
-			else
-			{
-				bool silver = is_silver(mat, circles[i].second, circles[i].first);
-				if (silver)
-				{
-					sum += 5;
-					value = 5;
-					col = Scalar(0, 255, 0);
-				}
-				else
-				{
-					sum += 50;
-					value = 50;
-					col = Scalar(255, 0, 0);
-				}
-			}
-		}
-		circle(valuesMat, circles[i].second, circles[i].first, col, -1);
+		bool silver = is_silver(mat, circles[i].second, circles[i].first);
+		
+		int value = coinsData.detect_coin_value(circles[i].first, silver);
+
 		values.push_back(value);
+		sum += value;
 	}
 
 	printValue(mat, circles, values);
-//	imshow("value", valuesMat);
 	imshow("original", mat);
 	waitKey();
 	cout << "Sum = " << sum << endl;

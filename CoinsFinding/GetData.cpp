@@ -74,12 +74,24 @@ void CoinsData::addCoin(int coin, float radius)
 	coins[index].averageRad = curr_rad / coins[index].quantity;
 }
 
-int CoinsData::detect_coin_value(float rad)
+int CoinsData::detect_coin_value(float rad, bool silver)
 {
 	float min_dist = rad;
 	int coin_to_return = 0;
 	int value = 0;
-	for (int i = 0; i < coins.size(); ++i)
+	int begin;
+	int end;
+	if (silver == true)
+	{
+		begin = 0;
+		end = 3;
+	}
+	else
+	{
+		begin = 3;
+		end = coins.size();
+	}
+	for (int i = begin; i < end; ++i)
 	{
 		if (abs(rad - coins[i].averageRad) < min_dist)
 		{
