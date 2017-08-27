@@ -120,8 +120,6 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 
 	Mat maskLocal;
 	localMax(dst, maskLocal, true);
-	Mat customMask;
-	customLocalMax(dst, customMask);
 
 	vector<Point> lmax;
 	findNonZero(maskLocal, lmax);
