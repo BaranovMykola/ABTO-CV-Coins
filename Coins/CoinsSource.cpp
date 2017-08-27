@@ -108,6 +108,10 @@ void inputImg(string name, void* img)
 	std::string path = a4 + name + ext;
 	Mat* imgMat = static_cast<Mat*>(img);
 	*imgMat = imread(path);
+	if ((*imgMat).empty())
+	{
+		throw exception("File doesn't exist. Try again");
+	}
 	Mat sourceCopy = imgMat->clone();
 
 	auto corners = getA4Corners(sourceCopy, bilaterialDiam, cannyThresh, houghThresh, minGradLines, minGradLinesOverlap, ::distance);
@@ -133,22 +137,39 @@ void inputImg(string name, void* img)
 
 }
 
-
+void help()
+{
+	cout << "To close program enter exit, to load an image, enter it's name" << endl;
+}
 
 int main()
 {
 	try
 	{
-
-
-	std::string name;
-	cout << "Enter input image\n>> ";
-	cin >> name;
+				
+	std::string name="";
 	Mat source;
 	
-	inputImg(name, &source);
-		
+	while (name != "exit")
+	{
+		help();
+		cout << "Enter name of input image\n>> ";
+		cin >> name;
+		try
+		{
+			inputImg(name, &source);
+			break;
+		}
+		catch (exception obj)
+		{
+			cout << obj.what() << endl;
+		}
+	}
 
+	if (name == "exit")
+	{
+		return 0;
+	}
 	CoinsData coinsData;
 	coinsData.readData();
 	Mat outputImg;
