@@ -161,10 +161,17 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 		cvtColor(orig_pict, lab_pict, CV_BGR2Lab);
 		Mat pl[3];
 		split(lab_pict, pl);
+		//equalizeHist(pl[2], pl[2]);
+		double max;
+		minMaxLoc(pl[2], 0, &max);
+		pl[2] *= (255 / max);
+		threshold(pl[2], pl[2], 220, 255, THRESH_BINARY);
+		bitwise_not(pl[2], pl[2]);
 		float mean_val = mean(lab_pict, mask)[2];
 		float mean_aver = mean(lab_pict, cMask)[2];
-		float diffP = mean_aver/ mean_val;
-		labB = mean_val -mean_aver < 15;
+		float diffP = abs(mean_val - mean_aver);
+		auto maskMean = mean(pl[2], mask)[0];
+		labB = maskMean  > 100;
 	}
 
 	{
@@ -174,14 +181,17 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 		cvtColor(orig_pict, hsl, CV_BGR2HLS);
 		Mat pl[3];
 		split(hsl, pl);
+		equalizeHist(pl[0], pl[0]);
+		threshold(pl[0], pl[0], 40, 255, THRESH_BINARY);
 		float mean_val = mean(hsl, mask)[0];
 		float mean_aver = mean(hsl, cMask)[0];
 		double min;
 		minMaxLoc(pl[0], &min, 0, 0, 0, mask);
-		float diffP = mean_aver / mean_val;
-		hslB = mean_aver - mean_val < 10;
+		float diffP = abs(mean_aver - mean_val);
+		auto maskMean = mean(pl[0], mask);
+		hslB =  maskMean[0] > 100;
 	}
 
-	return hslB && labB;
+	return labB;
 }
 #pragma endregion 
