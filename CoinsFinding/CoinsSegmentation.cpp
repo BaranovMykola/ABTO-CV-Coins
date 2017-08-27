@@ -194,7 +194,14 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 		}
 		mergeRemote(filtered, 3, full);
 		additional.clear();
-		additional = filtered;
+		//additional = filtered;
+		for (auto i : filtered)
+		{
+			if (canCircleBeCoin(i.second, i.first, mask.size()))
+			{
+				additional.push_back(i);
+			}
+		}
 		
 
 		for (auto i : filtered)

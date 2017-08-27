@@ -126,53 +126,25 @@ vector<pair<float, Point2f>> findCircleContours(Mat& source, Mat& outputImg)
 # pragma region detect_coin_value
 void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData)
 {
-	int sum = 0;
-	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC3);
 	Mat cMask = Mat::zeros(mat.size(), CV_8UC1);
 	for (auto i : circles)
 	{
 		circle(cMask, i.second, i.first, Scalar::all(255), -1);
 	}
+	bitwise_not(cMask, cMask);
+	int sum = 0;
 	vector<int> values;
 	for (int i = 0; i < circles.size(); ++i)
 	{
-		Scalar col(255, 0, 0);
-		int value = coinsData.detect_coin_value(circles[i].first);
-		if (value == 10)
-		{
-			col = Scalar(255, 255, 0);
-			sum += 10;
-		}
-		else
-		{
-			if (value == 25)
-			{
-				col = Scalar(0, 0, 255);
-				sum += 25;
-			}
-			else
-			{
-				bool silver = is_silver(mat, circles[i].second, circles[i].first, cMask);
-				if (silver)
-				{
-					sum += 5;
-					value = 5;
-					col = Scalar(0, 255, 0);
-				}
-				else
-				{
-					sum += 50;
-					value = 50;
-					col = Scalar(255, 0, 0);
-				}
-			}
-		}
-		circle(valuesMat, circles[i].second, circles[i].first, col, -1);
+		bool silver = is_silver(mat, circles[i].second, circles[i].first, cMask);
+
+		int value = coinsData.detect_coin_value(circles[i].first, silver);
+
 		values.push_back(value);
+		sum += value;
 	}
 
 	printValue(mat, circles, values);
-//	imshow("value", valuesMat);
 	imshow("original", mat);
 	waitKey();
 	cout << "Sum = " << sum << endl;
@@ -183,7 +155,6 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 	bool labB;
 	bool hslB;
 	Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
-	bitwise_not(cMask, cMask);
 	{
 		circle(mask, center, radius, Scalar(255), -1);
 		Mat lab_pict;
@@ -193,7 +164,7 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 		float mean_val = mean(lab_pict, mask)[2];
 		float mean_aver = mean(lab_pict, cMask)[2];
 		float diffP = mean_aver/ mean_val;
-		labB = diffP < 0.1;
+		labB = mean_val -mean_aver < 15;
 	}
 
 	{
@@ -207,9 +178,10 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 		float mean_aver = mean(hsl, cMask)[0];
 		double min;
 		minMaxLoc(pl[0], &min, 0, 0, 0, mask);
-		hslB = mean_val > mean_aver;
+		float diffP = mean_aver / mean_val;
+		hslB = mean_aver - mean_val < 10;
 	}
 
-	return labB;
+	return hslB && labB;
 }
 #pragma endregion 

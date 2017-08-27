@@ -9,6 +9,9 @@
 using namespace std;
 using namespace cv;
 
+static int a = 0;
+static int b = 0;
+
 
 void printRadius(vector<pair<float, Point2f>>& circles, Mat& outputImg);
 

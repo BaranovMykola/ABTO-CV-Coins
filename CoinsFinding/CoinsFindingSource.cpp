@@ -110,9 +110,14 @@ int main()
 
 				segmentCoins(circles, source);
 
-				find_sum(source, circles, coinsData);
+
+				namedWindow("p");
+				createTrackbar("a", "p", &a, 100);
+				createTrackbar("b", "p", &b, 100);
+					find_sum(source, circles, coinsData);
 			}
 		}
 	} 
+	
 	return 0;
 }
