@@ -128,6 +128,11 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 {
 	int sum = 0;
 	Mat valuesMat = Mat::zeros(mat.size(), CV_8UC3);
+	Mat cMask = Mat::zeros(mat.size(), CV_8UC1);
+	for (auto i : circles)
+	{
+		circle(cMask, i.second, i.first, Scalar::all(255), -1);
+	}
 	vector<int> values;
 	for (int i = 0; i < circles.size(); ++i)
 	{
@@ -147,7 +152,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 			}
 			else
 			{
-				bool silver = is_silver(mat, circles[i].second, circles[i].first);
+				bool silver = is_silver(mat, circles[i].second, circles[i].first, cMask);
 				if (silver)
 				{
 					sum += 5;
@@ -173,19 +178,22 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 	cout << "Sum = " << sum << endl;
 }
 
-bool is_silver(Mat& orig_pict, Point2f center, float radius)
+bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)
 {
 	bool labB;
 	bool hslB;
-		Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
+	Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
+	bitwise_not(cMask, cMask);
 	{
 		circle(mask, center, radius, Scalar(255), -1);
 		Mat lab_pict;
 		cvtColor(orig_pict, lab_pict, CV_BGR2Lab);
 		Mat pl[3];
 		split(lab_pict, pl);
-		Scalar mean_val = mean(lab_pict, mask);
-		labB = mean_val[2] < (255 / 2.0 + 4);
+		float mean_val = mean(lab_pict, mask)[2];
+		float mean_aver = mean(lab_pict, cMask)[2];
+		float diffP = mean_aver/ mean_val;
+		labB = diffP < 0.1;
 	}
 
 	{
@@ -195,10 +203,13 @@ bool is_silver(Mat& orig_pict, Point2f center, float radius)
 		cvtColor(orig_pict, hsl, CV_BGR2HLS);
 		Mat pl[3];
 		split(hsl, pl);
-		Scalar mean_val = mean(hsl, mask);
-		hslB = mean_val[0] > 70;
+		float mean_val = mean(hsl, mask)[0];
+		float mean_aver = mean(hsl, cMask)[0];
+		double min;
+		minMaxLoc(pl[0], &min, 0, 0, 0, mask);
+		hslB = mean_val > mean_aver;
 	}
 
-	return hslB || labB;
+	return labB;
 }
 #pragma endregion 
