@@ -128,11 +128,36 @@ void inputImg(string name, void* img, std::vector<Point>& transfromedPoints, std
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 
 
-	vector<Vec3i> circles{ Vec3i(20,20,5), Vec3i(80,90, 15) };
 	//circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
 
 	
-	//mainCoinsDetection(dst);
+	cropInterestRegion(dst, transfromedPoints);
+
+
+	CoinsData coinsData;
+	coinsData.readData();
+	Mat outputImg;
+
+	Mat source = dst;
+	source = bilaterialBlurCoins(source);
+	Mat m = getMask(source);
+	outputImg = source.clone();
+	auto circles = findCircleContours(source, outputImg);
+
+	segmentCoins(circles, source);
+
+
+
+	int sum = find_sum(source, circles, coinsData);
+
+	int gryvnyas = sum / 100;
+	int coins = sum % 100;
+
+	cout << "total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
+
+	circleProjection(circles, sourceCopy, transfromedPoints, corners);
+	namedWindow("segm", CV_WINDOW_NORMAL);
+	imshow("segm", sourceCopy);
 
 	namedWindow("Result", WINDOW_AUTOSIZE);
 	imshow("Result", dst);
@@ -163,7 +188,7 @@ int main()
 		{
 			inputImg(name, &source, t,s);
 
-			segm = source.clone();
+			//segm = source.clone();
 
 			cropInterestRegion(source, t);
 			break;
@@ -178,28 +203,7 @@ int main()
 	{
 		return 0;
 	}
-	CoinsData coinsData;
-	coinsData.readData();
-	Mat outputImg;
-
-	source = bilaterialBlurCoins(source);
-	Mat m = getMask(source);
-	outputImg = source.clone();
-	auto circles = findCircleContours(source, outputImg);
-
-	segmentCoins(circles, source);
-
-	Mat sc = imread("../A4/25.jpg");
-	circleProjection(circles, sc, s, t);
-	namedWindow("segm", CV_WINDOW_NORMAL);
-	imshow("segm", sc);
-
-	int sum = find_sum(source, circles, coinsData);
-
-	int gryvnyas = sum / 100;
-	int coins = sum % 100;
-
-	cout << "total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
+	
 	system("pause");
 
 	}

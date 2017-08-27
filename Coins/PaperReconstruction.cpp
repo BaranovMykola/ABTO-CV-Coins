@@ -148,7 +148,7 @@ void circleProjection(std::vector<std::pair<float, Point2f>> circles, Mat & src,
 
 	for (auto i : circles)
 	{
-		circle(draw, i.second, i.first, Scalar(1, 1, 255), 1);
+		circle(draw, i.second, i.first, Scalar(1, 1, 255), -1);
 	}
 
 	Point2f transP2f[4];
