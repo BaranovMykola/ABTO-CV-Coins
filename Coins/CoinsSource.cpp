@@ -12,6 +12,7 @@
 #include <iterator>
 #include <vector>
 #include <numeric>
+#include <exception>
 
 #include "Line.h"
 #include "ImagePreprocessing.h"
@@ -46,57 +47,6 @@ bool input(Mat& source, string number)
 	source = imread("../A4/" + number + "_cropped_.jpg");
 	return !source.empty();
 }
-
-void detectSilver(Mat& source)
-{
-	source = bilaterialBlurCoins(source);
-	Mat hsl;
-	Mat lab;
-	cvtColor(source, hsl, CV_BGR2HLS);
-	cvtColor(source, lab, CV_BGR2HLS);
-	Mat pl[3];
-	Mat plLab[3];
-	Mat plS[3];
-	split(hsl, pl);
-	split(lab, plLab);
-	split(source, plS);
-	threshold(pl[0], pl[0], 70, 255, THRESH_BINARY);
-	erode(pl[0], pl[0], getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-	morphologyEx(pl[0], pl[0], MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
-	Mat backg(source.size(), CV_8UC3);
-	backg = mean(source, pl[0]);
-	Mat sourceclone = source.clone();
-	backg.copyTo(sourceclone, pl[0]);
-	Mat diff;
-	absdiff(source, sourceclone, diff);
-	Mat dpl[3];
-	split(diff, dpl);
-	Mat mix = dpl[0];
-	mix += dpl[1];
-	mix += dpl[2];
-	//mix = bilaterialBlurCoins(mix);
-
-	namedWindow("Panel");
-	int b = 0;
-	int c = 0;
-	int m = 0;
-	createTrackbar("b", "Panel", &b, 150);
-	createTrackbar("c", "Panel", &c, 150);
-	createTrackbar("m", "Panel", &m, 150);
-
-	while (true)
-	{
-		Mat t = Mat::zeros(mix.size(), CV_8UC1);
-		threshold(mix, t, b, 255, THRESH_BINARY);
-		imshow("t", t);
-		waitKey(1);
-	}
-	//threshold(diff, diff, 40, 255, THRESH_BINARY);
-	/*morphologyEx(diff, diff, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
-	morphologyEx(diff, diff, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));*/
-}
-
-
 
 std::vector<Point> getA4Corners(Mat& input,
 								int bilateralDiam, 
@@ -137,17 +87,24 @@ std::vector<Point> getA4Corners(Mat& input,
 	}
 
 	std::sort(families.begin(), families.end(), [](std::set<Point2f,  PointComparatorX> l, std::set<Point2f,  PointComparatorX> r) { return l.size() > r.size(); });
-	return accumulatePointFamilies(std::vector<std::set<Point2f,  PointComparatorX> >(families.begin(), families.begin() + A4CornersCount));
+	std::vector<Point> corners;
+	
+	if (families.size() < A4CornersCount)
+	{
+		throw std::exception("Couldn't regonize A4 corners");
+	}
+	return accumulatePointFamilies(std::vector<std::set<Point2f, PointComparatorX> >(families.begin(), families.begin() + A4CornersCount));
+
 }
 
-void changeInput(int, void* img)
+void inputImg(string name, void* img)
 {
 	std::string a4 = "../A4/";
 	std::string ext = ".jpg";
 	std::stringstream str;
-	std::string name;
-	str << imgIndex;
-	str >> name;
+	//std::string name;
+	/*str << imgIndex;
+	str >> name;*/
 	std::string path = a4 + name + ext;
 	Mat* imgMat = static_cast<Mat*>(img);
 	*imgMat = imread(path);
@@ -180,53 +137,36 @@ void changeInput(int, void* img)
 
 int main()
 {
-	std::string action;
-	Mat source;
-	const char* panel = "Preprocessing";
-	/*namedWindow(panel, CV_WINDOW_NORMAL);
-	createTrackbar("Img", panel, &imgIndex, 13, changeInput, &source);
-	createTrackbar("B diameter", panel, &bilaterialDiam, 50, changeInput, &source);
-	createTrackbar("C low", panel, &cannyThresh, 900, changeInput, &source);
-	createTrackbar("H rho", panel, &hough_rho, 300, changeInput, &source);
-	createTrackbar("H thresh", panel, &houghThresh, 900, changeInput, &source);
-	createTrackbar("H min grad", panel, &minGradLines, 90, changeInput, &source);
-	createTrackbar("P dst", panel, &distance, 900, changeInput, &source);
-	createTrackbar("L minGradCust", panel, &minGradLinesOverlap, 90, changeInput, &source);
-	createTrackbar("L marginK", panel, &marginK, 2300, changeInput, &source);
-	*/
-	std::cout << ">> ";
-	std::cin >> action;
+	try
+	{
 
+
+	std::string name;
+	cout << "Enter input image\n>> ";
+	cin >> name;
+	Mat source;
 	
-	std::stringstream str;
-	str << action;
-	str >> imgIndex;
-	changeInput(0, &source);
+	inputImg(name, &source);
 		
 
-	string ch;
 	CoinsData coinsData;
 	coinsData.readData();
 	Mat outputImg;
 
+	Mat segm = source.clone();
+	source = bilaterialBlurCoins(source);
+	Mat m = getMask(source);
+	outputImg = source.clone();
+	auto circles = findCircleContours(source, outputImg);
 
-				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
-				/*autoContrast(source);
-				truncInv(source);*/
-				//detectSilver(source);
-				Mat segm = source.clone();
-				source = bilaterialBlurCoins(source);
-				Mat m = getMask(source);
-				outputImg = source.clone();
-				auto circles = findCircleContours(source, outputImg);
+	segmentCoins(circles, source);
 
-				segmentCoins(circles, source);
-
-
-				//namedWindow("p");
-				//createTrackbar("a", "p", &a, 100);
-				//createTrackbar("b", "p", &b, 100);
-				find_sum(source, circles, coinsData);
-			
+	find_sum(source, circles, coinsData);
+	}
+	catch (const std::exception& error)
+	{
+		cout << "Error:\t" << error.what() << endl;
+		system("pause");
+	}
 	return 0;
 }
