@@ -114,12 +114,6 @@ int main()
 			}
 		}
 	} 
-	bool write = false;
-	cout << "write?" << endl;
-	cin >> write;
-	if (write)
-	{
-		coinsData.writeData();
-	}
+	
 	return 0;
 }
