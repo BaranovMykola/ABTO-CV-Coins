@@ -10,6 +10,8 @@
 #include <future>
 #include <sstream>
 #include <iterator>
+#include <vector>
+#include <numeric>
 
 #include "Line.h"
 #include "ImagePreprocessing.h"
@@ -17,6 +19,14 @@
 #include "PointsComparation.h"
 #include "PaperReconstruction.h"
 #include "CoinsDetection.h"
+
+#include "GetData.h"
+#include "PointsComparation.h"
+#include "CoinsSegmentation.h"
+#include "DetectCoin.h"
+#include "Histogram.h"
+
+typedef std::vector<std::pair<float, cv::Point>> circleType;
 
 using namespace cv;
 
@@ -27,9 +37,64 @@ int bilaterialDiam = 30;
 int cannyThresh = 80;
 int houghThresh = 70;
 int minGradLines = 0;
-int imgIndex = 7; // 8, 6 crashes
+int imgIndex = 7; 
 
 
+bool input(Mat& source, string number)
+{
+	destroyAllWindows();
+	source = imread("../A4/" + number + "_cropped_.jpg");
+	return !source.empty();
+}
+
+void detectSilver(Mat& source)
+{
+	source = bilaterialBlurCoins(source);
+	Mat hsl;
+	Mat lab;
+	cvtColor(source, hsl, CV_BGR2HLS);
+	cvtColor(source, lab, CV_BGR2HLS);
+	Mat pl[3];
+	Mat plLab[3];
+	Mat plS[3];
+	split(hsl, pl);
+	split(lab, plLab);
+	split(source, plS);
+	threshold(pl[0], pl[0], 70, 255, THRESH_BINARY);
+	erode(pl[0], pl[0], getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	morphologyEx(pl[0], pl[0], MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));
+	Mat backg(source.size(), CV_8UC3);
+	backg = mean(source, pl[0]);
+	Mat sourceclone = source.clone();
+	backg.copyTo(sourceclone, pl[0]);
+	Mat diff;
+	absdiff(source, sourceclone, diff);
+	Mat dpl[3];
+	split(diff, dpl);
+	Mat mix = dpl[0];
+	mix += dpl[1];
+	mix += dpl[2];
+	//mix = bilaterialBlurCoins(mix);
+
+	namedWindow("Panel");
+	int b = 0;
+	int c = 0;
+	int m = 0;
+	createTrackbar("b", "Panel", &b, 150);
+	createTrackbar("c", "Panel", &c, 150);
+	createTrackbar("m", "Panel", &m, 150);
+
+	while (true)
+	{
+		Mat t = Mat::zeros(mix.size(), CV_8UC1);
+		threshold(mix, t, b, 255, THRESH_BINARY);
+		imshow("t", t);
+		waitKey(1);
+	}
+	//threshold(diff, diff, 40, 255, THRESH_BINARY);
+	/*morphologyEx(diff, diff, MORPH_OPEN, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
+	morphologyEx(diff, diff, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)));*/
+}
 
 
 
@@ -102,12 +167,12 @@ void changeInput(int, void* img)
 	//circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
 
 	cropInterestRegion(dst, transfromedPoints);
-	imwrite(a4 + name + "_cropped_" + ext, dst);
-
+	
 	//mainCoinsDetection(dst);
 
 	namedWindow("Result", WINDOW_AUTOSIZE);
 	imshow("Result", dst);
+	*((Mat*)img) = dst;
 
 }
 
@@ -131,35 +196,37 @@ int main()
 	*/
 	std::cout << ">> ";
 	std::cin >> action;
-	if (action == "all")
-	{
-		for (int i = 0; i < 13; i++)
-		{
-			imgIndex = i;
-			changeInput(0, &source);
-			if (waitKey() == 27)
-			{
-				break;
-			}
-		}
-	}
-	else
-	{
-		while (action != "q")
-		{
-			std::stringstream str;
-			str << action;
-			str >> imgIndex;
-			changeInput(0, &source);
 
-			if (waitKey() == 27)
-			{
-				break;
-			}
+	
+	std::stringstream str;
+	str << action;
+	str >> imgIndex;
+	changeInput(0, &source);
+		
 
-			std::cout << ">> ";
-			std::cin >> action;
-		}
-	}
+	string ch;
+	CoinsData coinsData;
+	coinsData.readData();
+	Mat outputImg;
+
+
+				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
+				/*autoContrast(source);
+				truncInv(source);*/
+				//detectSilver(source);
+				Mat segm = source.clone();
+				source = bilaterialBlurCoins(source);
+				Mat m = getMask(source);
+				outputImg = source.clone();
+				auto circles = findCircleContours(source, outputImg);
+
+				segmentCoins(circles, source);
+
+
+				//namedWindow("p");
+				//createTrackbar("a", "p", &a, 100);
+				//createTrackbar("b", "p", &b, 100);
+				find_sum(source, circles, coinsData);
+			
 	return 0;
 }

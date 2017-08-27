@@ -36,6 +36,18 @@
     <ClCompile Include="CoinsDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CoinsSegmentation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectCoin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GetData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Histogram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Line.h">
@@ -56,5 +68,20 @@
     <ClInclude Include="CoinsDetection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CoinsSegmentation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DetectCoin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GetData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Histogram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="AverageValue.txt" />
   </ItemGroup>
 </Project>
