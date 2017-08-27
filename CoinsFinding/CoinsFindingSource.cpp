@@ -101,9 +101,10 @@ int main()
 				cout << "Overexposed: " << boolalpha << isOverexposed(source) << endl;
 				/*autoContrast(source);
 				truncInv(source);*/
-				detectSilver(source);
+				//detectSilver(source);
 				Mat segm = source.clone();
 				source = bilaterialBlurCoins(source);
+				Mat m = getMask(source);
 				outputImg = source.clone();
 				auto circles = findCircleContours(source, outputImg);
 

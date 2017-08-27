@@ -15,7 +15,7 @@ using namespace std;
 void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
 {
 	// find pixels that are equal to the local neighborhood not maximum (including 'plateaus')
-	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(3,3)));
 	cv::compare(src, mask, mask, cv::CMP_GE);
 
 	// optionally filter out pixels that are equal to the local minimum ('plateaus')
@@ -65,7 +65,7 @@ circleType mergeNearest(circleType circles, int minDist, cv::Mat& dst)
 		float r;
 		auto rIt = std::max_element(i.begin(), i.end(), [&](Point2f l, Point2f r) { return dst.at<float>(l) < dst.at<float>(r); });
 		r = dst.at<float>(*rIt);
-		average.push_back(make_pair(r+2, sum));
+		average.push_back(make_pair(r+0.5, sum));
 	}
 	return average;
 }
@@ -123,10 +123,10 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 	cvtColor(mask, bm, CV_BGR2GRAY);
 	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY);
 	threshold(bm, mask, 255 / 3, 255, THRESH_BINARY_INV);*/
-	//mask = getMask(source);
-	Mat clone = source.clone();
+	mask = getMask(source);
+	/*Mat clone = source.clone();
 	autoContrast(clone);
-	mask = truncInv(clone);
+	mask = truncInv(clone);*/
 
 	for (auto i : circles)
 	{

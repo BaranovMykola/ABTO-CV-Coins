@@ -170,20 +170,22 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 //	imshow("value", valuesMat);
 	imshow("original", mat);
 	waitKey();
+	cout << "Sum = " << sum << endl;
 }
+
 bool is_silver(Mat& orig_pict, Point2f center, float radius)
 {
 	bool labB;
 	bool hslB;
-	{
 		Mat mask = Mat::zeros(orig_pict.size(), CV_8UC1);
+	{
 		circle(mask, center, radius, Scalar(255), -1);
 		Mat lab_pict;
 		cvtColor(orig_pict, lab_pict, CV_BGR2Lab);
 		Mat pl[3];
 		split(lab_pict, pl);
 		Scalar mean_val = mean(lab_pict, mask);
-		labB = mean_val[2] < 255 / 2.0;
+		labB = mean_val[2] < (255 / 2.0 + 4);
 	}
 
 	{

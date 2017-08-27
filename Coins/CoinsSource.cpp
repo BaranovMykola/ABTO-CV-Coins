@@ -99,7 +99,7 @@ void changeInput(int, void* img)
 
 
 	vector<Vec3i> circles{ Vec3i(20,20,5), Vec3i(80,90, 15) };
-	circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
+	//circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
 
 	cropInterestRegion(dst, transfromedPoints);
 	imwrite(a4 + name + "_cropped_" + ext, dst);
