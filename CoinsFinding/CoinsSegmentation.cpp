@@ -12,7 +12,7 @@ typedef std::vector<std::pair<float, cv::Point>> circleType;
 using namespace cv;
 using namespace std;
 
-void non_maxima_suppression(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
+void localMax(const cv::Mat& src, cv::Mat& mask, const bool remove_plateaus)
 {
 	// find pixels that are equal to the local neighborhood not maximum (including 'plateaus')
 	cv::dilate(src, mask, getStructuringElement(MORPH_ELLIPSE, Size(3,3)));
@@ -166,7 +166,7 @@ void segmentCoins(std::vector<std::pair<float, cv::Point2f>>& circles, cv::Mat s
 		Mat max = dil-dstVis;*/
 
 		Mat maskLocal;
-		non_maxima_suppression(t, maskLocal, true);
+		localMax(t, maskLocal, true);
 		Mat customMask;
 		customLocalMax(t, customMask);
 
