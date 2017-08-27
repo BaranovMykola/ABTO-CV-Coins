@@ -33,7 +33,7 @@ vector<pair<float, Point2f>> processContours(vector<vector<Point>>& contours, Si
 
 vector<pair<float, Point2f>> findCircleContours(Mat & source, Mat& outputImg);
 
-void find_sum(Mat & mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData);
+int find_sum(Mat & mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData);
 
 bool is_silver(Mat & orig_pict, Point2f center, float radius, cv::Mat& cMask);
 

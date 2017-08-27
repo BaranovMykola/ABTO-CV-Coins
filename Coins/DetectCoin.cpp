@@ -124,7 +124,7 @@ vector<pair<float, Point2f>> findCircleContours(Mat& source, Mat& outputImg)
 
 
 # pragma region detect_coin_value
-void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData)
+int find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsData)
 {
 	Mat cMask = Mat::zeros(mat.size(), CV_8UC1);
 	for (auto i : circles)
@@ -148,6 +148,7 @@ void find_sum(Mat& mat, vector<pair<float, Point2f>>& circles, CoinsData& coinsD
 	imshow("original", mat);
 	waitKey();
 	cout << "Sum = " << sum << endl;
+	return sum;
 }
 
 bool is_silver(Mat& orig_pict, Point2f center, float radius, Mat& cMask)

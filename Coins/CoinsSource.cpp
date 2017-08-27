@@ -194,7 +194,14 @@ int main()
 	namedWindow("segm", CV_WINDOW_NORMAL);
 	imshow("segm", sc);
 
-	find_sum(source, circles, coinsData);
+	int sum = find_sum(source, circles, coinsData);
+
+	int gryvnyas = sum / 100;
+	int coins = sum % 100;
+
+	cout << "total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
+	system("pause");
+
 	}
 	catch (const std::exception& error)
 	{
