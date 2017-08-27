@@ -122,6 +122,9 @@ Mat getMask2(Mat& photo)
 		absdiff(backgroundPlanes[i], originalPlanes[i], oneChannelDiff[i]);
 	}
 
+	Mat zeroAndTwoChannelsDiff;
+	absdiff(oneChannelDiff[0], oneChannelDiff[2], zeroAndTwoChannelsDiff);
+	threshold(zeroAndTwoChannelsDiff, zeroAndTwoChannelsDiff, 0, 255, THRESH_BINARY | THRESH_OTSU);
 	bitwise_not(oneChannelDiff[2], oneChannelDiff[2]);
 	Mat colGrayscale;
 	merge(oneChannelDiff, colGrayscale);
@@ -129,6 +132,7 @@ Mat getMask2(Mat& photo)
 	Mat gold;
 	absdiff(originalPlanes[2], oneChannelDiff[0], gold);
 	cvtColor(colGrayscale, grayscale, CV_BGR2GRAY);
+
 
 	threshold(gold, gold, 0, 255, THRESH_BINARY | THRESH_OTSU);
 
