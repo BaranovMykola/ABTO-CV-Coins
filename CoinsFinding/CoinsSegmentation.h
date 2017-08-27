@@ -11,7 +11,7 @@ typedef std::vector<std::pair<float, cv::Point>> circleType;
 using namespace cv;
 using namespace std;
 
-void non_maxima_suppression(const cv::Mat & src, cv::Mat & mask, const bool remove_plateaus);
+void localMax(const cv::Mat & src, cv::Mat & mask, const bool remove_plateaus);
 
 bool isNearest(std::set<Point2f, PointComparatorX> points, Point2f item, int minDist);
 
