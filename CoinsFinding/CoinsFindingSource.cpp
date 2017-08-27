@@ -33,11 +33,13 @@ int main()
 		if (ch == 'p')
 		{
 			input(source);
+			
 			Mat res = remove_shades(source);
-			/*Mat res = getMask(source);
-			Mat res1 = getMask1(source);
-			Mat res2 = getMask2(source);
-			Mat res3 = getMask3(source);*/
+
+			Mat r = getMask(res);
+			Mat r1 = getMask1(res);
+			Mat r2 = getMask2(res);
+			Mat r3 = getMask3(res);
 			Mat bestRes;
 		}
 	} 

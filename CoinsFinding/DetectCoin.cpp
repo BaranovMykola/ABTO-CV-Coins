@@ -84,8 +84,13 @@ Mat getMask1(Mat& photo)
 	createTrackbar("C", "n", &C, 100);
 	Mat otsuthreshold(photo.size(), grayscale.type());
 	
+	while (waitKey(100) != 27)
+	{
 		adaptiveThreshold(grayscale, bin, 254, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, blockSize * 2 + 1, C);
-		morphologyEx(bin, bin, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+		//
+		imshow("", bin);
+		//morphologyEx(bin, bin, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+	}
 	
 	return bin;
 }
@@ -132,8 +137,7 @@ Mat getMask2(Mat& photo)
 	namedWindow("window");
 	int tr1 = 35;
 	int tr2 = 42;
-	//createTrackbar("tr1", "window", &tr1, 500);
-	//createTrackbar("tr2", "window", &tr2, 500);
+
 	Mat cannied(photo.size(), CV_8UC1);
 	
 	Canny(backgroundPlanes[0], cannied, tr1, tr2, 3, true);
@@ -142,22 +146,6 @@ Mat getMask2(Mat& photo)
 	bitwise_and(gold, cannied, cannied);
 	return cannied;
 }
-Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
-{ 
-	Mat hsv;
-	cvtColor(photo, hsv, CV_BGR2HSV);
-	vector<Mat> hsvPlanes(3);
-	split(hsv, hsvPlanes);
-	for (int i = 0; i < 1; ++i)
-	{
-		equalizeHist(hsvPlanes[i], hsvPlanes[i]);
-	}
-	merge(hsvPlanes, hsv);
-	cvtColor(hsv, hsv, CV_HSV2BGR);
-	return hsv;
-}
-
-
 Mat getMask3(Mat& photo)//method that tries to divide foreground from background
 {
 	Mat res(photo.size(), CV_8UC1);
@@ -190,6 +178,22 @@ Mat getMask3(Mat& photo)//method that tries to divide foreground from background
 	threshold(oneChannelDiff[2], oneChannelDiff[2], 0, 255, THRESH_BINARY | THRESH_OTSU);
 
 	return oneChannelDiff[2];
+}
+Mat remove_shades(Mat& photo)//method that tries to deal with bad background and divide foreground from background
+{ 
+	Mat hsv = photo.clone();
+ 	vector<Mat> hsvPlanes(3);
+	split(hsv, hsvPlanes);
+
+	threshold(hsvPlanes[2], hsvPlanes[2], 0, 255, THRESH_BINARY | THRESH_OTSU);
+	for (int i = 0; i < 3; ++i)
+	{
+		equalizeHist(hsvPlanes[i], hsvPlanes[i]);
+	}
+	merge(hsvPlanes, hsv);
+
+
+	return hsv;
 }
 
 
