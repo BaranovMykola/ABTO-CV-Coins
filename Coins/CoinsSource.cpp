@@ -38,7 +38,7 @@ int bilaterialDiam = 30;
 int cannyThresh = 80;
 int houghThresh = 70;
 int minGradLines = 0;
-int imgIndex = 7; 
+int imgIndex = 7;
 
 
 bool input(Mat& source, string number)
@@ -49,11 +49,11 @@ bool input(Mat& source, string number)
 }
 
 std::vector<Point> getA4Corners(Mat& input,
-								int bilateralDiam, 
-								int cannyThresh, 
-								int houghThresh, 
-								int minGradLines, 
-								int minGradLinesOverlap, 
+								int bilateralDiam,
+								int cannyThresh,
+								int houghThresh,
+								int minGradLines,
+								int minGradLinesOverlap,
 								int minPointDistance)
 {
 	reduceSize(input);
@@ -86,9 +86,9 @@ std::vector<Point> getA4Corners(Mat& input,
 		drawPoint(var, input, Scalar::all(255));
 	}
 
-	std::sort(families.begin(), families.end(), [](std::set<Point2f,  PointComparatorX> l, std::set<Point2f,  PointComparatorX> r) { return l.size() > r.size(); });
+	std::sort(families.begin(), families.end(), [](std::set<Point2f, PointComparatorX> l, std::set<Point2f, PointComparatorX> r) { return l.size() > r.size(); });
 	std::vector<Point> corners;
-	
+
 	if (families.size() < A4CornersCount)
 	{
 		throw std::exception("Couldn't regonize A4 corners");
@@ -128,9 +128,7 @@ void inputImg(string name, void* img, std::vector<Point>& transfromedPoints, std
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 
 
-	//circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
 
-	
 	cropInterestRegion(dst, transfromedPoints);
 
 
@@ -147,22 +145,24 @@ void inputImg(string name, void* img, std::vector<Point>& transfromedPoints, std
 	segmentCoins(circles, source);
 
 
-
-	int sum = find_sum(source, circles, coinsData);
+	std::vector<int> values;
+	int sum = find_sum(source, circles, coinsData, values);
 
 	int gryvnyas = sum / 100;
 	int coins = sum % 100;
 
-	cout << "total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
+	cout << "Total result: " << gryvnyas << " gryvnyas, " << coins << " coins" << endl;
 
-	auto p = imread("../A4/62.jpg");
+	auto p = imgMat->clone();
 	circleProjection(circles, p, sourceCorners, transfromedPoints);
-	namedWindow("segm", CV_WINDOW_NORMAL);
-	imshow("segm", p);
+	namedWindow("Coins", CV_WINDOW_NORMAL);
+	imshow("Coins", p);
 
+	printValue(dst, circles, values);
 	namedWindow("Result", WINDOW_AUTOSIZE);
 	imshow("Result", dst);
 	*((Mat*)img) = dst;
+	waitKey();
 
 }
 
@@ -175,37 +175,26 @@ int main()
 {
 	try
 	{
-				
-	std::string name="";
-	Mat source;
-	std::vector<Point> s, t;
-	Mat segm;
-	while (name != "exit")
-	{
-		help();
-		cout << "Enter name of input image\n>> ";
-		cin >> name;
-		try
+
+		std::string name = "";
+		Mat source;
+		std::vector<Point> s, t;
+		Mat segm;
+		while (name != "exit")
 		{
-			inputImg(name, &source, t,s);
-
-			//segm = source.clone();
-
-			cropInterestRegion(source, t);
-			break;
+			help();
+			cout << "Enter name of input image\n>> ";
+			cin >> name;
+			try
+			{
+				inputImg(name, &source, t, s);
+				break;
+			}
+			catch (exception obj)
+			{
+				cout << obj.what() << endl;
+			}
 		}
-		catch (exception obj)
-		{
-			cout << obj.what() << endl;
-		}
-	}
-
-	if (name == "exit")
-	{
-		return 0;
-	}
-	
-	system("pause");
 
 	}
 	catch (const std::exception& error)
