@@ -97,7 +97,7 @@ std::vector<Point> getA4Corners(Mat& input,
 
 }
 
-void inputImg(string name, void* img)
+void inputImg(string name, void* img, std::vector<Point>& transfromedPoints, std::vector<Point>& corners)
 {
 	std::string a4 = "../A4/";
 	std::string ext = ".jpg";
@@ -114,20 +114,23 @@ void inputImg(string name, void* img)
 	}
 	Mat sourceCopy = imgMat->clone();
 
-	auto corners = getA4Corners(sourceCopy, bilaterialDiam, cannyThresh, houghThresh, minGradLines, minGradLinesOverlap, ::distance);
+	corners = getA4Corners(sourceCopy, bilaterialDiam, cannyThresh, houghThresh, minGradLines, minGradLinesOverlap, ::distance);
 	std::vector<Point> sourceCorners;
 	float k = imgMat->size().width / sourceCopy.cols;
 	std::transform(corners.begin(), corners.end(), std::inserter(sourceCorners, sourceCorners.begin()), [=](auto i) { return i*k; });
+	corners.clear();
+	for (auto i : sourceCorners)
+	{
+		corners.push_back(i);
+	}
 
 	Mat dst;
-	std::vector<Point> transfromedPoints;
 	paperToRectangle(*imgMat, dst, sourceCorners, std::inserter(transfromedPoints, transfromedPoints.begin()), k);
 
 
 	vector<Vec3i> circles{ Vec3i(20,20,5), Vec3i(80,90, 15) };
 	//circleProjection(circles, sourceCopy, sourceCorners, transfromedPoints);
 
-	cropInterestRegion(dst, transfromedPoints);
 	
 	//mainCoinsDetection(dst);
 
@@ -149,7 +152,8 @@ int main()
 				
 	std::string name="";
 	Mat source;
-	
+	std::vector<Point> s, t;
+	Mat segm;
 	while (name != "exit")
 	{
 		help();
@@ -157,7 +161,11 @@ int main()
 		cin >> name;
 		try
 		{
-			inputImg(name, &source);
+			inputImg(name, &source, t,s);
+
+			segm = source.clone();
+
+			cropInterestRegion(source, t);
 			break;
 		}
 		catch (exception obj)
@@ -174,13 +182,17 @@ int main()
 	coinsData.readData();
 	Mat outputImg;
 
-	Mat segm = source.clone();
 	source = bilaterialBlurCoins(source);
 	Mat m = getMask(source);
 	outputImg = source.clone();
 	auto circles = findCircleContours(source, outputImg);
 
 	segmentCoins(circles, source);
+
+	Mat sc = imread("../A4/25.jpg");
+	circleProjection(circles, sc, s, t);
+	namedWindow("segm", CV_WINDOW_NORMAL);
+	imshow("segm", sc);
 
 	find_sum(source, circles, coinsData);
 	}

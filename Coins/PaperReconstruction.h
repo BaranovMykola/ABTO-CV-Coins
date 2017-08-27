@@ -104,4 +104,4 @@ inline Mat paperToRectangle(Mat& pict, Mat& dst, std::vector<cv::Point> points, 
 	return transMat;
 }
 
-void circleProjection(std::vector<cv::Vec3i> circles, Mat& dst, std::vector<Point> sourceCorners, std::vector<Point> transformedCorners);
+void circleProjection(std::vector<std::pair<float, Point2f>> circles, Mat& dst, std::vector<Point> sourceCorners, std::vector<Point> transformedCorners);
